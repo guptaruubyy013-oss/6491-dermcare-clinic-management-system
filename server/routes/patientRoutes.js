@@ -10,9 +10,13 @@ const {
 } = require("../controllers/patientController");
 
 router.post("/", createPatient);
+
 router.get("/", getPatients);
+
 router.get("/:id", getPatientById);
+
 router.put("/:id", updatePatient);
+
 router.delete("/:id", deletePatient);
 
 module.exports = router;

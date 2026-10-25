@@ -1,0 +1,1129 @@
+/* ======================================================
+   DERMCARE - RECEPTIONIST BILLING
+   ====================================================== */
+
+.reception-billing-page {
+  min-height: 85vh;
+  background: #f5f8fb;
+  color: #17233c;
+  padding-bottom: 60px;
+}
+
+/* ======================================================
+   HERO
+   ====================================================== */
+
+.reception-billing-hero {
+  background: linear-gradient(
+    135deg,
+    #eef7fa 0%,
+    #f9fbfd 100%
+  );
+  border-bottom: 1px solid #dce7ed;
+  padding: 42px 7%;
+}
+
+.reception-billing-hero-content {
+  max-width: 1250px;
+  margin: 0 auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 35px;
+}
+
+.reception-billing-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  color: #167d97;
+  text-decoration: none;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  margin-bottom: 25px;
+}
+
+.reception-billing-back:hover {
+  color: #0d5265;
+}
+
+.reception-billing-label {
+  display: block;
+
+  color: #16819a;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 1.8px;
+
+  margin-bottom: 8px;
+}
+
+.reception-billing-hero h1 {
+  margin: 0;
+
+  color: #14213d;
+
+  font-size: 42px;
+  font-weight: 800;
+}
+
+.reception-billing-hero p {
+  max-width: 700px;
+
+  margin: 13px 0 0;
+
+  color: #68788b;
+
+  font-size: 16px;
+  line-height: 1.7;
+}
+
+.reception-billing-hero-icon {
+  width: 105px;
+  height: 105px;
+
+  border-radius: 28px;
+
+  background: #ffffff;
+  border: 1px solid #dce7ed;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #16819a;
+
+  font-size: 42px;
+
+  box-shadow: 0 12px 30px rgba(20, 55, 75, 0.08);
+}
+
+/* ======================================================
+   CONTAINER
+   ====================================================== */
+
+.reception-billing-container {
+  width: min(1250px, 90%);
+  margin: 0 auto;
+}
+
+/* ======================================================
+   SUMMARY
+   ====================================================== */
+
+.reception-billing-summary {
+  margin-top: 28px;
+
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+
+  gap: 18px;
+}
+
+.reception-billing-summary-card {
+  background: #ffffff;
+
+  border: 1px solid #e1e8ed;
+  border-radius: 17px;
+
+  padding: 21px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  box-shadow: 0 7px 24px rgba(20, 50, 70, 0.05);
+}
+
+.reception-summary-icon {
+  width: 49px;
+  height: 49px;
+
+  border-radius: 13px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  font-size: 19px;
+}
+
+.reception-summary-icon.blue {
+  background: #eaf5ff;
+  color: #2175b8;
+}
+
+.reception-summary-icon.green {
+  background: #e9f8f0;
+  color: #24935c;
+}
+
+.reception-summary-icon.orange {
+  background: #fff3df;
+  color: #d68118;
+}
+
+.reception-summary-icon.purple {
+  background: #f2edff;
+  color: #7651c9;
+}
+
+.reception-billing-summary-card span {
+  display: block;
+
+  color: #7b8999;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 1px;
+
+  margin-bottom: 5px;
+}
+
+.reception-billing-summary-card strong {
+  display: block;
+
+  color: #17233c;
+
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.reception-billing-summary-card small {
+  display: block;
+
+  color: #8996a5;
+
+  font-size: 11px;
+
+  margin-top: 3px;
+}
+
+/* ======================================================
+   FILTER
+   ====================================================== */
+
+.reception-billing-filter {
+  margin-top: 28px;
+
+  background: #ffffff;
+
+  border: 1px solid #e0e8ed;
+  border-radius: 17px;
+
+  padding: 18px;
+
+  display: grid;
+  grid-template-columns: 1fr 190px 120px;
+
+  gap: 12px;
+
+  box-shadow: 0 7px 24px rgba(20, 50, 70, 0.04);
+}
+
+.reception-billing-search {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+}
+
+.reception-billing-search > svg {
+  position: absolute;
+  left: 15px;
+
+  color: #8996a5;
+
+  font-size: 14px;
+}
+
+.reception-billing-search input {
+  width: 100%;
+
+  height: 44px;
+
+  border: 1px solid #dbe4e9;
+  border-radius: 10px;
+
+  padding: 0 42px;
+
+  outline: none;
+
+  color: #263650;
+
+  font-size: 13px;
+
+  background: #fbfcfd;
+}
+
+.reception-billing-search input:focus {
+  border-color: #86bdca;
+  background: #ffffff;
+}
+
+.reception-billing-clear {
+  position: absolute;
+  right: 12px;
+
+  border: none;
+  background: transparent;
+
+  color: #8996a5;
+
+  cursor: pointer;
+}
+
+.reception-billing-status-filter {
+  height: 44px;
+
+  border: 1px solid #dbe4e9;
+  border-radius: 10px;
+
+  padding: 0 12px;
+
+  background: #fbfcfd;
+
+  color: #263650;
+
+  outline: none;
+
+  font-size: 13px;
+}
+
+.reception-billing-refresh {
+  height: 44px;
+
+  border: 1px solid #dbe4e9;
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  color: #263650;
+
+  font-weight: 700;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 7px;
+}
+
+.reception-billing-refresh:hover {
+  background: #f1f8fa;
+}
+
+.reception-billing-refresh:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.reception-billing-spin {
+  animation: receptionBillingSpin 0.9s linear infinite;
+}
+
+@keyframes receptionBillingSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ======================================================
+   RECORDS
+   ====================================================== */
+
+.reception-billing-records {
+  margin-top: 38px;
+}
+
+.reception-billing-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 18px;
+}
+
+.reception-billing-section-header > div:first-child span {
+  color: #16819a;
+
+  font-size: 11px;
+  font-weight: 800;
+
+  letter-spacing: 1.5px;
+}
+
+.reception-billing-section-header h2 {
+  margin: 5px 0 0;
+
+  color: #17233c;
+
+  font-size: 27px;
+  font-weight: 800;
+}
+
+.reception-billing-count {
+  padding: 8px 14px;
+
+  border: 1px solid #dce5eb;
+  border-radius: 20px;
+
+  background: #ffffff;
+
+  color: #607086;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* ======================================================
+   BILL CARD
+   ====================================================== */
+
+.reception-billing-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.reception-billing-card {
+  background: #ffffff;
+
+  border: 1px solid #dfe7ec;
+  border-radius: 19px;
+
+  overflow: hidden;
+
+  box-shadow: 0 8px 28px rgba(22, 49, 70, 0.05);
+}
+
+.reception-billing-card-header {
+  padding: 22px 25px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+
+  border-bottom: 1px solid #e7edf1;
+}
+
+.reception-billing-patient {
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+}
+
+.reception-billing-avatar {
+  width: 50px;
+  height: 50px;
+
+  border-radius: 50%;
+
+  background: linear-gradient(
+    135deg,
+    #168aa3,
+    #125d78
+  );
+
+  color: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 19px;
+  font-weight: 800;
+
+  flex-shrink: 0;
+}
+
+.reception-billing-patient > div:last-child > span {
+  display: block;
+
+  color: #8996a6;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 1px;
+
+  margin-bottom: 3px;
+}
+
+.reception-billing-patient h3 {
+  margin: 0;
+
+  color: #17233c;
+
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.reception-billing-contact {
+  display: flex;
+  flex-wrap: wrap;
+
+  gap: 12px;
+
+  margin-top: 5px;
+}
+
+.reception-billing-contact small {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 5px;
+
+  color: #78889a;
+
+  font-size: 11px;
+}
+
+.reception-billing-contact svg {
+  color: #16819a;
+}
+
+/* ======================================================
+   STATUS
+   ====================================================== */
+
+.reception-billing-status {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 7px;
+
+  padding: 8px 13px;
+
+  border-radius: 25px;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  white-space: nowrap;
+}
+
+.reception-billing-paid {
+  background: #e8f7ef;
+  color: #197246;
+}
+
+.reception-billing-pending {
+  background: #fff2dc;
+  color: #ad6812;
+}
+
+.reception-billing-partial {
+  background: #fff4d4;
+  color: #946300;
+}
+
+.reception-billing-cancelled {
+  background: #fdeaea;
+  color: #a53737;
+}
+
+/* ======================================================
+   BILL INFO
+   ====================================================== */
+
+.reception-billing-info {
+  padding: 20px 25px;
+
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+
+  gap: 15px;
+
+  background: #fbfcfd;
+
+  border-bottom: 1px solid #e7edf1;
+}
+
+.reception-billing-info span {
+  display: flex;
+  align-items: center;
+
+  gap: 6px;
+
+  color: #8996a5;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 0.8px;
+
+  margin-bottom: 6px;
+}
+
+.reception-billing-info strong {
+  color: #263650;
+
+  font-size: 14px;
+}
+
+.reception-billing-info .reception-paid {
+  color: #238051;
+}
+
+.reception-billing-info .reception-pending {
+  color: #bd7417;
+}
+
+/* ======================================================
+   SERVICES
+   ====================================================== */
+
+.reception-billing-services {
+  padding: 22px 25px;
+}
+
+.reception-billing-services h4 {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  margin: 0 0 13px;
+
+  color: #263650;
+
+  font-size: 15px;
+}
+
+.reception-billing-services h4 svg {
+  color: #16819a;
+}
+
+.reception-billing-table-wrapper {
+  overflow-x: auto;
+
+  border: 1px solid #e2e8ec;
+
+  border-radius: 11px;
+}
+
+.reception-billing-table-wrapper table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  min-width: 600px;
+}
+
+.reception-billing-table-wrapper th {
+  padding: 12px 14px;
+
+  background: #f5f8fa;
+
+  color: #7d8998;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  text-align: left;
+
+  text-transform: uppercase;
+}
+
+.reception-billing-table-wrapper td {
+  padding: 13px 14px;
+
+  border-top: 1px solid #edf0f2;
+
+  color: #34445b;
+
+  font-size: 13px;
+}
+
+.reception-billing-table-wrapper th:not(:first-child),
+.reception-billing-table-wrapper td:not(:first-child) {
+  text-align: right;
+}
+
+/* ======================================================
+   CARD FOOTER
+   ====================================================== */
+
+.reception-billing-card-footer {
+  padding: 17px 25px;
+
+  border-top: 1px solid #e7edf1;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 20px;
+}
+
+.reception-billing-card-footer span {
+  display: block;
+
+  color: #8996a5;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 1px;
+
+  margin-bottom: 4px;
+}
+
+.reception-billing-card-footer strong {
+  color: #263650;
+
+  font-size: 13px;
+}
+
+.reception-view-bill {
+  border: none;
+
+  background: #17233c;
+
+  color: #ffffff;
+
+  padding: 10px 17px;
+
+  border-radius: 9px;
+
+  display: inline-flex;
+  align-items: center;
+
+  gap: 7px;
+
+  font-size: 12px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+.reception-view-bill:hover {
+  background: #263d5b;
+}
+
+/* ======================================================
+   EMPTY
+   ====================================================== */
+
+.reception-billing-empty {
+  padding: 70px 25px;
+
+  background: #ffffff;
+
+  border: 1px solid #e1e8ee;
+  border-radius: 19px;
+
+  text-align: center;
+}
+
+.reception-billing-empty-icon {
+  width: 72px;
+  height: 72px;
+
+  margin: 0 auto 17px;
+
+  border-radius: 20px;
+
+  background: #edf6fa;
+
+  color: #17829d;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 29px;
+}
+
+.reception-billing-empty h3 {
+  margin: 0 0 8px;
+
+  color: #17233c;
+
+  font-size: 22px;
+}
+
+.reception-billing-empty p {
+  margin: 0;
+
+  color: #718095;
+
+  font-size: 14px;
+}
+
+/* ======================================================
+   MODAL
+   ====================================================== */
+
+.reception-billing-modal-overlay {
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 9999;
+
+  background: rgba(15, 27, 43, 0.55);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+}
+
+.reception-billing-modal {
+  width: min(650px, 100%);
+
+  max-height: 90vh;
+
+  overflow-y: auto;
+
+  background: #ffffff;
+
+  border-radius: 20px;
+
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.22);
+}
+
+.reception-billing-modal-header {
+  padding: 20px 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  border-bottom: 1px solid #e6edf1;
+}
+
+.reception-billing-modal-header span {
+  color: #16819a;
+
+  font-size: 10px;
+  font-weight: 800;
+
+  letter-spacing: 1.2px;
+}
+
+.reception-billing-modal-header h2 {
+  margin: 4px 0 0;
+
+  color: #17233c;
+
+  font-size: 21px;
+}
+
+.reception-billing-modal-header button {
+  width: 35px;
+  height: 35px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: #f1f4f6;
+
+  color: #56677b;
+
+  cursor: pointer;
+}
+
+.reception-billing-modal-body {
+  padding: 24px;
+}
+
+.reception-modal-patient {
+  display: flex;
+  align-items: center;
+
+  gap: 14px;
+
+  padding-bottom: 20px;
+
+  border-bottom: 1px solid #e7edf1;
+}
+
+.reception-modal-patient span,
+.reception-modal-notes span {
+  color: #8996a5;
+
+  font-size: 9px;
+  font-weight: 800;
+
+  letter-spacing: 1px;
+}
+
+.reception-modal-patient h3 {
+  margin: 3px 0;
+
+  color: #17233c;
+
+  font-size: 18px;
+}
+
+.reception-modal-patient p {
+  margin: 0;
+
+  color: #728095;
+
+  font-size: 12px;
+}
+
+.reception-modal-grid {
+  margin-top: 20px;
+
+  display: grid;
+
+  grid-template-columns: repeat(2, 1fr);
+
+  gap: 15px;
+}
+
+.reception-modal-grid > div {
+  padding: 14px;
+
+  background: #f7f9fa;
+
+  border-radius: 10px;
+}
+
+.reception-modal-grid span {
+  display: block;
+
+  color: #8996a5;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  margin-bottom: 5px;
+}
+
+.reception-modal-grid strong {
+  color: #263650;
+
+  font-size: 14px;
+}
+
+.reception-modal-notes {
+  margin-top: 18px;
+
+  padding: 15px;
+
+  background: #f7f9fa;
+
+  border-radius: 10px;
+}
+
+.reception-modal-notes p {
+  margin: 6px 0 0;
+
+  color: #627187;
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+.reception-billing-modal-footer {
+  padding: 17px 24px;
+
+  border-top: 1px solid #e6edf1;
+
+  display: flex;
+  justify-content: flex-end;
+}
+
+.reception-modal-close {
+  border: none;
+
+  background: #17233c;
+
+  color: #ffffff;
+
+  padding: 10px 20px;
+
+  border-radius: 9px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+/* ======================================================
+   LOADING
+   ====================================================== */
+
+.reception-billing-loading {
+  min-height: 65vh;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+}
+
+.reception-billing-loading-icon {
+  width: 70px;
+  height: 70px;
+
+  border-radius: 20px;
+
+  background: #eaf5f8;
+
+  color: #17829d;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 28px;
+
+  animation: receptionBillingPulse 1.4s ease-in-out infinite;
+}
+
+.reception-billing-loading h2 {
+  margin: 18px 0 7px;
+
+  color: #17233c;
+
+  font-size: 23px;
+}
+
+.reception-billing-loading p {
+  margin: 0;
+
+  color: #748398;
+}
+
+@keyframes receptionBillingPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+/* ======================================================
+   TABLET
+   ====================================================== */
+
+@media (max-width: 1050px) {
+  .reception-billing-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .reception-billing-info {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ======================================================
+   MOBILE
+   ====================================================== */
+
+@media (max-width: 768px) {
+  .reception-billing-hero {
+    padding: 30px 5%;
+  }
+
+  .reception-billing-hero-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .reception-billing-hero h1 {
+    font-size: 32px;
+  }
+
+  .reception-billing-hero-icon {
+    width: 75px;
+    height: 75px;
+
+    font-size: 30px;
+  }
+
+  .reception-billing-container {
+    width: 92%;
+  }
+
+  .reception-billing-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .reception-billing-filter {
+    grid-template-columns: 1fr;
+  }
+
+  .reception-billing-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .reception-billing-info {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .reception-billing-section-header {
+    align-items: flex-start;
+  }
+
+  .reception-billing-card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .reception-view-bill {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ======================================================
+   SMALL MOBILE
+   ====================================================== */
+
+@media (max-width: 480px) {
+  .reception-billing-hero h1 {
+    font-size: 28px;
+  }
+
+  .reception-billing-info {
+    grid-template-columns: 1fr;
+  }
+
+  .reception-billing-contact {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .reception-modal-grid {
+    grid-template-columns: 1fr;
+  }
+}

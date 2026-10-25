@@ -1,64 +1,99 @@
 const mongoose = require("mongoose");
 
 const treatmentSchema = new mongoose.Schema(
-    {
-        patient: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Patient",
-            required: [true, "Patient ID is required"],
-        },
-        doctor: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Doctor",
-            required: [true, "Doctor ID is required"],
-        },
-        appointment: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Appointment",
-        },
-        treatmentType: {
-            type: String,
-            required: [true, "Treatment type is required"], // e.g., Acne Scars, Hair PRP, Chemical Peel
-            trim: true,
-        },
-        sessionNumber: {
-            type: Number,
-            default: 1,
-        },
-        diagnosis: {
-            type: String,
-            required: true,
-        },
-        procedureNotes: {
-            type: String,
-        },
-        // Before and After image URLs from Cloudinary
-        beforeImages: [
-            {
-                url: String,
-                public_id: String,
-                uploadedAt: { type: Date, default: Date.now },
-            },
-        ],
-        afterImages: [
-            {
-                url: String,
-                public_id: String,
-                uploadedAt: { type: Date, default: Date.now },
-            },
-        ],
-        prescriptions: [
-            {
-                medicineName: String,
-                dosage: String, // e.g. "Once daily after food"
-                duration: String, // e.g. "14 Days"
-            },
-        ],
-        nextFollowUpDate: {
-            type: Date,
-        },
+  {
+    patient: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "Patient ID is required"],
     },
-    { timestamps: true }
+
+    doctor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "Doctor ID is required"],
+    },
+
+    appointment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Appointment",
+    },
+
+    treatmentType: {
+      type: String,
+      required: [true, "Treatment type is required"],
+      trim: true,
+    },
+
+    sessionNumber: {
+      type: Number,
+      default: 1,
+    },
+
+    diagnosis: {
+      type: String,
+      required: [true, "Diagnosis is required"],
+      trim: true,
+    },
+
+    procedureNotes: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    beforeImages: [
+      {
+        url: String,
+        public_id: String,
+        uploadedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+
+    afterImages: [
+      {
+        url: String,
+        public_id: String,
+        uploadedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+
+    prescriptions: [
+      {
+        medicineName: {
+          type: String,
+          trim: true,
+        },
+
+        dosage: {
+          type: String,
+          trim: true,
+        },
+
+        duration: {
+          type: String,
+          trim: true,
+        },
+      },
+    ],
+
+    nextFollowUpDate: {
+      type: Date,
+    },
+  },
+
+  {
+    timestamps: true,
+  }
 );
 
-module.exports = mongoose.model("Treatment", treatmentSchema);
+module.exports = mongoose.model(
+  "Treatment",
+  treatmentSchema
+);

@@ -6,7 +6,7 @@ const DEFAULT_PROCEDURE_IMG =
 
 export const clinicalProcedures = [
   // ==========================================
-  // 1. SKIN CLINICAL PROCEDURES (8 Treatments)
+  // 1. SKIN CLINICAL PROCEDURES
   // ==========================================
   {
     id: "skin-1",
@@ -28,6 +28,7 @@ export const clinicalProcedures = [
       "Cryo-calming antioxidant sheet infusion",
     ],
   },
+
   {
     id: "skin-2",
     name: "Medical Hydra-Vortex Dermabrasion & Infusion",
@@ -48,6 +49,7 @@ export const clinicalProcedures = [
       "Micro-current skin tightening and cold hammer seal",
     ],
   },
+
   {
     id: "skin-3",
     name: "MNRF (Micro-Needling Fractional Radiofrequency)",
@@ -68,6 +70,7 @@ export const clinicalProcedures = [
       "Application of sterile peptide healing cocktail",
     ],
   },
+
   {
     id: "skin-4",
     name: "HIFU (High-Intensity Focused Ultrasound) Non-Surgical Face Lift",
@@ -88,6 +91,7 @@ export const clinicalProcedures = [
       "Progressive lifting over 90 days",
     ],
   },
+
   {
     id: "skin-5",
     name: "Triple-Wave Ice Diode Laser Hair Reduction",
@@ -108,6 +112,7 @@ export const clinicalProcedures = [
       "Zero razor bumps, ingrown hairs, or surface burns",
     ],
   },
+
   {
     id: "skin-6",
     name: "Dermatological Chemical Peels (Salicylic / TCA Cross / Glycolic)",
@@ -128,6 +133,7 @@ export const clinicalProcedures = [
       "Post-peel soothing ceramide and zinc shield",
     ],
   },
+
   {
     id: "skin-7",
     name: "Bio-Cellular Exosome Skin Rejuvenation Therapy",
@@ -148,6 +154,7 @@ export const clinicalProcedures = [
       "Rapid reduction in inflammatory redness and fine lines",
     ],
   },
+
   {
     id: "skin-8",
     name: "Tri-Wave Medical LED Photobiomodulation",
@@ -170,7 +177,7 @@ export const clinicalProcedures = [
   },
 
   // ==========================================
-  // 2. HAIR CLINICAL PROCEDURES (8 Treatments)
+  // 2. HAIR CLINICAL PROCEDURES
   // ==========================================
   {
     id: "hair-1",
@@ -192,6 +199,7 @@ export const clinicalProcedures = [
       "Zero RBC/WBC contamination for maximum safety and comfort",
     ],
   },
+
   {
     id: "hair-2",
     name: "Autologous Platelet-Rich Plasma (PRP) Scalp Protocol",
@@ -212,6 +220,7 @@ export const clinicalProcedures = [
       "Trichoscan digital photographic progress tracking",
     ],
   },
+
   {
     id: "hair-3",
     name: "Scalp Detox & Micro-Oxygen Jet Clarification",
@@ -232,6 +241,7 @@ export const clinicalProcedures = [
       "Infusion of antibacterial zinc and menthol extracts",
     ],
   },
+
   {
     id: "hair-4",
     name: "Scalp Microneedling with Bio-Peptide Mesotherapy",
@@ -252,6 +262,7 @@ export const clinicalProcedures = [
       "Enhances scalp absorption of topical minoxidil/serums by 80%",
     ],
   },
+
   {
     id: "hair-5",
     name: "Low-Level Laser Therapy (LLLT) Scalp Helmet Protocol",
@@ -272,6 +283,7 @@ export const clinicalProcedures = [
       "100% painless and non-invasive therapy",
     ],
   },
+
   {
     id: "hair-6",
     name: "Scalp Exosome Follicular Revival Infusion",
@@ -292,6 +304,7 @@ export const clinicalProcedures = [
       "Noticeable improvement in hair strand thickness within 60 days",
     ],
   },
+
   {
     id: "hair-7",
     name: "Clinical Keratin Bond Reconstruction & Anti-Breakage",
@@ -312,6 +325,7 @@ export const clinicalProcedures = [
       "Eliminates frizz and strengthens brittle ends",
     ],
   },
+
   {
     id: "hair-8",
     name: "Seborrheic Dermatitis & Scalp Acne Clarifying Treatment",
@@ -341,6 +355,7 @@ const skinSubCategories = [
   "Acne Scars & Texture",
   "Anti-Ageing & Lifting",
   "Laser & Body",
+  "Acne & Pigmentation",
 ];
 
 const hairSubCategories = [
@@ -352,54 +367,101 @@ const hairSubCategories = [
 ];
 
 const Services = () => {
-  const [activeMainCategory, setActiveMainCategory] = useState("Skin Procedures");
+  const [activeMainCategory, setActiveMainCategory] =
+    useState("Skin Procedures");
+
   const [selectedSub, setSelectedSub] = useState("All");
+
   const [search, setSearch] = useState("");
+
   const navigate = useNavigate();
 
   const activeSubList =
-    activeMainCategory === "Skin Procedures" ? skinSubCategories : hairSubCategories;
+    activeMainCategory === "Skin Procedures"
+      ? skinSubCategories
+      : hairSubCategories;
 
-  const filtered = clinicalProcedures.filter((p) => {
-    const matchMain = p.category === activeMainCategory;
+  const filtered = clinicalProcedures.filter((procedure) => {
+    const matchMain =
+      procedure.category === activeMainCategory;
+
     const matchSub =
       selectedSub === "All" ||
       selectedSub.startsWith("All") ||
-      p.subCategory === selectedSub;
+      procedure.subCategory === selectedSub;
+
     const matchSearch =
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.desc.toLowerCase().includes(search.toLowerCase()) ||
-      p.technology.toLowerCase().includes(search.toLowerCase()) ||
-      p.subCategory.toLowerCase().includes(search.toLowerCase());
+      procedure.name
+        .toLowerCase()
+        .includes(search.toLowerCase()) ||
+      procedure.desc
+        .toLowerCase()
+        .includes(search.toLowerCase()) ||
+      procedure.technology
+        .toLowerCase()
+        .includes(search.toLowerCase()) ||
+      procedure.subCategory
+        .toLowerCase()
+        .includes(search.toLowerCase());
+
     return matchMain && matchSub && matchSearch;
   });
 
+  // --------------------------------------------------
+  // BOOK PROCEDURE
+  // Sends selected service to Appointment page
+  // --------------------------------------------------
   const handleBookProcedure = (procedure) => {
-    navigate("/appointment", { state: { selectedProcedure: procedure } });
+    navigate("/appointment", {
+      state: {
+        selectedProcedure: procedure,
+      },
+    });
   };
 
   return (
-    <div style={{ backgroundColor: "#f8fafb", minHeight: "88vh", padding: "2.5rem 0 5rem 0" }}>
+    <div
+      style={{
+        backgroundColor: "#f8fafb",
+        minHeight: "88vh",
+        padding: "2.5rem 0 5rem 0",
+      }}
+    >
       <div className="container">
-        {/* Hero Header */}
+
+        {/* ==========================================
+            HERO HEADER
+        ========================================== */}
         <div
           className="p-4 p-md-5 rounded-4 shadow-sm mb-4 text-white position-relative"
           style={{
-            background: "linear-gradient(135deg, #0e3b43 0%, #175a66 100%)",
-            border: "1px solid rgba(255,255,255,0.1)",
+            background:
+              "linear-gradient(135deg, #0e3b43 0%, #175a66 100%)",
+            border:
+              "1px solid rgba(255,255,255,0.1)",
           }}
         >
           <div className="d-flex flex-wrap justify-content-between align-items-center gap-3">
+
             <div>
               <span className="badge bg-white text-dark rounded-pill px-3 py-1 mb-2 fw-semibold">
                 🏥 Certified Clinical Procedures & Technologies
               </span>
-              <h2 className="fw-bold mb-2">Advanced Skin & Trichology Procedures</h2>
-              <p className="text-white-50 mb-0" style={{ maxWidth: "680px" }}>
-                Conducted by certified dermatologists and aesthetic surgeons using US-FDA approved
-                laser, RF, ultrasound, and regenerative protocols.
+
+              <h2 className="fw-bold mb-2">
+                Advanced Skin & Trichology Procedures
+              </h2>
+
+              <p
+                className="text-white-50 mb-0"
+                style={{ maxWidth: "680px" }}
+              >
+                Conducted by certified dermatologists and aesthetic
+                surgeons using US-FDA approved laser, RF, ultrasound,
+                and regenerative protocols.
               </p>
             </div>
+
             <div className="d-flex gap-2">
               <Link
                 to="/service-offers"
@@ -408,38 +470,52 @@ const Services = () => {
                 View Package Offers ⚡
               </Link>
             </div>
+
           </div>
         </div>
 
-        {/* Master Category Switcher */}
+        {/* ==========================================
+            MAIN CATEGORY SWITCHER
+        ========================================== */}
         <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+
           <div className="d-flex gap-2">
+
             <button
+              type="button"
               onClick={() => {
                 setActiveMainCategory("Skin Procedures");
                 setSelectedSub("All");
               }}
               className={`btn rounded-pill px-4 py-2 fw-bold shadow-sm ${
-                activeMainCategory === "Skin Procedures" ? "btn-dark" : "btn-light border"
+                activeMainCategory === "Skin Procedures"
+                  ? "btn-dark"
+                  : "btn-light border"
               }`}
               style={{ fontSize: "0.95rem" }}
             >
               🧴 Clinical Skin Procedures (8)
             </button>
+
             <button
+              type="button"
               onClick={() => {
                 setActiveMainCategory("Hair Procedures");
                 setSelectedSub("All");
               }}
               className={`btn rounded-pill px-4 py-2 fw-bold shadow-sm ${
-                activeMainCategory === "Hair Procedures" ? "btn-dark" : "btn-light border"
+                activeMainCategory === "Hair Procedures"
+                  ? "btn-dark"
+                  : "btn-light border"
               }`}
               style={{ fontSize: "0.95rem" }}
             >
               💆 Clinical Hair & Scalp Procedures (8)
             </button>
+
           </div>
 
+          {/* Search */}
           <input
             type="text"
             className="form-control rounded-pill px-3 form-control-sm"
@@ -448,19 +524,35 @@ const Services = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+
         </div>
 
-        {/* Sub-Category Filter Pills */}
+        {/* ==========================================
+            SUB CATEGORY FILTER
+        ========================================== */}
         <div className="d-flex flex-wrap gap-2 mb-4 pb-2 border-bottom">
+
           {activeSubList.map((sub) => {
+
             const isAll = sub.startsWith("All");
-            const isSelected = selectedSub === sub || (isAll && selectedSub === "All");
+
+            const isSelected =
+              selectedSub === sub ||
+              (isAll && selectedSub === "All");
+
             return (
               <button
+                type="button"
                 key={sub}
-                onClick={() => setSelectedSub(isAll ? "All" : sub)}
+                onClick={() =>
+                  setSelectedSub(
+                    isAll ? "All" : sub
+                  )
+                }
                 className={`btn btn-sm rounded-pill px-3 ${
-                  isSelected ? "btn-primary text-white" : "btn-outline-secondary"
+                  isSelected
+                    ? "btn-primary text-white"
+                    : "btn-outline-secondary"
                 }`}
                 style={{ fontSize: "0.82rem" }}
               >
@@ -468,115 +560,282 @@ const Services = () => {
               </button>
             );
           })}
+
         </div>
 
-        {/* Procedures Grid */}
+        {/* ==========================================
+            PROCEDURES GRID
+        ========================================== */}
         <div className="row g-4">
-          {filtered.map((proc) => (
-            <div key={proc.id} className="col-md-6 col-lg-4">
-              <div className="card h-100 border-0 rounded-4 shadow-sm bg-white overflow-hidden d-flex flex-column">
-                {/* Image Container with Badges */}
-                <div
-                  className="position-relative"
-                  style={{ height: "220px", overflow: "hidden", backgroundColor: "#f2f5f6" }}
-                >
-                  <span
-                    className="position-absolute top-0 start-0 badge m-3 shadow-sm"
-                    style={{ backgroundColor: "#0e3b43", fontSize: "0.75rem" }}
-                  >
-                    {proc.tag}
-                  </span>
-                  <span
-                    className="position-absolute top-0 end-0 badge bg-warning text-dark m-3 shadow-sm fw-bold"
-                    style={{ fontSize: "0.75rem" }}
-                  >
-                    {proc.rating}
-                  </span>
-                  <img
-                    src={proc.img}
-                    alt={proc.name}
-                    className="w-100 h-100 object-fit-cover"
-                    style={{ transition: "transform 0.3s ease" }}
-                    onError={(e) => {
-                      e.currentTarget.onerror = null;
-                      e.currentTarget.src = DEFAULT_PROCEDURE_IMG;
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
-                    onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                  />
-                </div>
 
-                {/* Body Content */}
-                <div className="p-4 d-flex flex-column flex-grow-1">
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <span className="badge bg-light text-primary border">{proc.subCategory}</span>
-                    <span className="small text-muted fw-semibold">⏱️ {proc.duration}</span>
-                  </div>
+          {filtered.length === 0 ? (
 
-                  <h5 className="fw-bold text-dark mb-2" style={{ fontSize: "1.05rem" }}>
-                    {proc.name}
-                  </h5>
-                  <p className="small text-muted mb-3">{proc.desc}</p>
+            <div className="col-12">
+              <div className="text-center py-5 bg-white rounded-4 shadow-sm">
+                <h5 className="fw-bold">
+                  No procedures found
+                </h5>
 
-                  {/* Clinical Specifications Box */}
-                  <div className="bg-light p-3 rounded-3 mb-3 border">
-                    <div className="row g-2 small text-secondary mb-2">
-                      <div className="col-6">
-                        <span className="text-muted d-block" style={{ fontSize: "0.72rem" }}>
-                          DOWNTIME:
-                        </span>
-                        <strong className="text-dark">{proc.downtime}</strong>
-                      </div>
-                      <div className="col-6">
-                        <span className="text-muted d-block" style={{ fontSize: "0.72rem" }}>
-                          SESSIONS:
-                        </span>
-                        <strong className="text-dark">{proc.sessions}</strong>
-                      </div>
-                    </div>
-                    <div className="border-top pt-2">
-                      <span className="text-muted d-block" style={{ fontSize: "0.72rem" }}>
-                        EQUIPMENT / TECHNOLOGY:
-                      </span>
-                      <strong className="text-dark" style={{ fontSize: "0.78rem" }}>
-                        {proc.technology}
-                      </strong>
-                    </div>
-                  </div>
-
-                  {/* Protocol Steps Checklist */}
-                  <div className="mb-3">
-                    <div className="small fw-bold text-dark mb-1">🔬 Procedure Highlights:</div>
-                    <ul className="list-unstyled mb-0 small text-muted" style={{ fontSize: "0.78rem" }}>
-                      {proc.protocol.map((step, idx) => (
-                        <li key={idx} className="d-flex align-items-start gap-1 mb-1">
-                          <span className="text-success fw-bold">✓</span> {step}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Price & Booking Action */}
-                  <div className="d-flex justify-content-between align-items-center pt-3 border-top mt-auto">
-                    <div>
-                      <span className="text-muted" style={{ fontSize: "0.72rem" }}>
-                        Session Starting at
-                      </span>
-                      <h4 className="fw-bold text-dark mb-0">₹{proc.price}</h4>
-                    </div>
-                    <button
-                      onClick={() => handleBookProcedure(proc)}
-                      className="btn rounded-pill px-4 fw-bold text-white shadow-sm"
-                      style={{ backgroundColor: "#0e3b43" }}
-                    >
-                      Book Procedure →
-                    </button>
-                  </div>
-                </div>
+                <p className="text-muted mb-0">
+                  Try another search or category.
+                </p>
               </div>
             </div>
-          ))}
+
+          ) : (
+
+            filtered.map((proc) => (
+
+              <div
+                key={proc.id}
+                className="col-md-6 col-lg-4"
+              >
+
+                <div
+                  className="card h-100 border-0 rounded-4 shadow-sm bg-white overflow-hidden d-flex flex-column"
+                >
+
+                  {/* ==================================
+                      IMAGE
+                  ================================== */}
+                  <div
+                    className="position-relative"
+                    style={{
+                      height: "220px",
+                      overflow: "hidden",
+                      backgroundColor: "#f2f5f6",
+                    }}
+                  >
+
+                    <span
+                      className="position-absolute top-0 start-0 badge m-3 shadow-sm"
+                      style={{
+                        backgroundColor: "#0e3b43",
+                        fontSize: "0.75rem",
+                        zIndex: 2,
+                      }}
+                    >
+                      {proc.tag}
+                    </span>
+
+                    <span
+                      className="position-absolute top-0 end-0 badge bg-warning text-dark m-3 shadow-sm fw-bold"
+                      style={{
+                        fontSize: "0.75rem",
+                        zIndex: 2,
+                      }}
+                    >
+                      {proc.rating}
+                    </span>
+
+                    <img
+                      src={proc.img}
+                      alt={proc.name}
+                      className="w-100 h-100 object-fit-cover"
+                      style={{
+                        transition:
+                          "transform 0.3s ease",
+                      }}
+                      onError={(e) => {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src =
+                          DEFAULT_PROCEDURE_IMG;
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform =
+                          "scale(1.05)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform =
+                          "scale(1)";
+                      }}
+                    />
+
+                  </div>
+
+                  {/* ==================================
+                      BODY
+                  ================================== */}
+                  <div className="p-4 d-flex flex-column flex-grow-1">
+
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+
+                      <span className="badge bg-light text-primary border">
+                        {proc.subCategory}
+                      </span>
+
+                      <span className="small text-muted fw-semibold">
+                        ⏱️ {proc.duration}
+                      </span>
+
+                    </div>
+
+                    <h5
+                      className="fw-bold text-dark mb-2"
+                      style={{ fontSize: "1.05rem" }}
+                    >
+                      {proc.name}
+                    </h5>
+
+                    <p className="small text-muted mb-3">
+                      {proc.desc}
+                    </p>
+
+                    {/* ==================================
+                        CLINICAL SPECIFICATIONS
+                    ================================== */}
+                    <div className="bg-light p-3 rounded-3 mb-3 border">
+
+                      <div className="row g-2 small text-secondary mb-2">
+
+                        <div className="col-6">
+
+                          <span
+                            className="text-muted d-block"
+                            style={{
+                              fontSize: "0.72rem",
+                            }}
+                          >
+                            DOWNTIME:
+                          </span>
+
+                          <strong className="text-dark">
+                            {proc.downtime}
+                          </strong>
+
+                        </div>
+
+                        <div className="col-6">
+
+                          <span
+                            className="text-muted d-block"
+                            style={{
+                              fontSize: "0.72rem",
+                            }}
+                          >
+                            SESSIONS:
+                          </span>
+
+                          <strong className="text-dark">
+                            {proc.sessions}
+                          </strong>
+
+                        </div>
+
+                      </div>
+
+                      <div className="border-top pt-2">
+
+                        <span
+                          className="text-muted d-block"
+                          style={{
+                            fontSize: "0.72rem",
+                          }}
+                        >
+                          EQUIPMENT / TECHNOLOGY:
+                        </span>
+
+                        <strong
+                          className="text-dark"
+                          style={{
+                            fontSize: "0.78rem",
+                          }}
+                        >
+                          {proc.technology}
+                        </strong>
+
+                      </div>
+
+                    </div>
+
+                    {/* ==================================
+                        PROCEDURE HIGHLIGHTS
+                    ================================== */}
+                    <div className="mb-3">
+
+                      <div className="small fw-bold text-dark mb-1">
+                        🔬 Procedure Highlights:
+                      </div>
+
+                      <ul
+                        className="list-unstyled mb-0 small text-muted"
+                        style={{
+                          fontSize: "0.78rem",
+                        }}
+                      >
+
+                        {proc.protocol.map(
+                          (step, idx) => (
+
+                            <li
+                              key={idx}
+                              className="d-flex align-items-start gap-1 mb-1"
+                            >
+                              <span className="text-success fw-bold">
+                                ✓
+                              </span>
+
+                              {step}
+                            </li>
+
+                          )
+                        )}
+
+                      </ul>
+
+                    </div>
+
+                    {/* ==================================
+                        PRICE + BOOK BUTTON
+                    ================================== */}
+                    <div
+                      className="d-flex justify-content-between align-items-center pt-3 border-top mt-auto"
+                    >
+
+                      <div>
+
+                        <span
+                          className="text-muted"
+                          style={{
+                            fontSize: "0.72rem",
+                          }}
+                        >
+                          Session Starting at
+                        </span>
+
+                        <h4 className="fw-bold text-dark mb-0">
+                          ₹{proc.price}
+                        </h4>
+
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleBookProcedure(proc)
+                        }
+                        className="btn rounded-pill px-4 fw-bold text-white shadow-sm"
+                        style={{
+                          backgroundColor: "#0e3b43",
+                        }}
+                      >
+                        Book Procedure →
+                      </button>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            ))
+
+          )}
+
         </div>
+
       </div>
     </div>
   );

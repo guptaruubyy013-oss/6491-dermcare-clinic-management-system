@@ -1,59 +1,154 @@
 const mongoose = require("mongoose");
 
-const billSchema = new mongoose.Schema(
-    {
-        patient: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Patient",
-            required: [true, "Patient is required"],
-        },
-        doctor: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Doctor",
-            required: [true, "Doctor is required"],
-        },
-        appointment: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Appointment",
-        },
-        invoiceNumber: {
-            type: String,
-            unique: true,
-            required: true,
-        },
-        consultationFee: {
-            type: Number,
-            required: true,
-            default: 0,
-        },
-        treatmentFee: {
-            type: Number,
-            default: 0,
-        },
-        medicineCharges: {
-            type: Number,
-            default: 0,
-        },
-        discount: {
-            type: Number,
-            default: 0,
-        },
-        totalAmount: {
-            type: Number,
-            required: true,
-        },
-        paymentMethod: {
-            type: String,
-            enum: ["Cash", "Card", "UPI", "Online"],
-            default: "Cash",
-        },
-        paymentStatus: {
-            type: String,
-            enum: ["Paid", "Pending", "Partially Paid"],
-            default: "Paid",
-        },
+const BillSchema = new mongoose.Schema(
+  {
+    // ==========================================
+    // BILL NUMBER
+    // ==========================================
+    billNumber: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
     },
-    { timestamps: true }
+
+    // ==========================================
+    // PATIENT
+    // ==========================================
+    patient: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    // ==========================================
+    // DOCTOR
+    // ==========================================
+    doctor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    // ==========================================
+    // APPOINTMENT
+    // ==========================================
+    appointment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Appointment",
+      default: null,
+    },
+
+    // ==========================================
+    // SERVICES / PRODUCTS / HAMPERS
+    // ==========================================
+    services: [
+      {
+        name: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+
+        type: {
+          type: String,
+          default: "Service",
+          trim: true,
+        },
+
+        quantity: {
+          type: Number,
+          default: 1,
+          min: 1,
+        },
+
+        price: {
+          type: Number,
+          required: true,
+          min: 0,
+        },
+
+        total: {
+          type: Number,
+          required: true,
+          min: 0,
+        },
+      },
+    ],
+
+    // ==========================================
+    // AMOUNTS
+    // ==========================================
+    subtotal: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    discount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    // GST / TAX kept in database for compatibility,
+    // but our new billing screen sends 0.
+    tax: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    totalAmount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    // ==========================================
+    // PAYMENT
+    // ==========================================
+    paymentStatus: {
+      type: String,
+      enum: [
+        "Pending",
+        "Paid",
+        "Partially Paid",
+        "Cancelled",
+      ],
+      default: "Pending",
+    },
+
+    paymentMethod: {
+      type: String,
+      enum: [
+        "Cash",
+        "UPI",
+        "Card",
+        "Online",
+        "Not Paid",
+      ],
+      default: "Not Paid",
+    },
+
+    paidAmount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    // ==========================================
+    // NOTES
+    // ==========================================
+    notes: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
 );
 
-module.exports = mongoose.model("Bill", billSchema);
+module.exports = mongoose.model("Bill", BillSchema);

@@ -1,217 +1,2181 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+import {
+  FaUserDoctor,
+  FaCalendarCheck,
+  FaClock,
+  FaCircleCheck,
+  FaUsers,
+  FaArrowRight,
+  FaRotate,
+  FaFilePrescription,
+  FaXmark,
+  FaPlus,
+  FaTrash,
+  FaNotesMedical,
+  FaImage,
+} from "react-icons/fa6";
+
 import API from "../../api/axios";
+import { clinicProducts } from "../Products/Products";
 
-const DoctorDashboard = () => {
+import "./DoctorDashboard.css";
+
+function DoctorDashboard() {
+  const navigate = useNavigate();
+
+  const storedUser = localStorage.getItem("dermcare_user");
+
+  const user = storedUser
+    ? JSON.parse(storedUser)
+    : null;
+
+  const userId =
+    user?._id ||
+    user?.id ||
+    user?.userId ||
+    "";
+
   const [appointments, setAppointments] = useState([]);
-  const [activeTab, setActiveTab] = useState("queue");
-  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [doctorId, setDoctorId] = useState("");
 
-  // Clinical Consultation Form
-  const [rxForm, setRxForm] = useState({
+  // ==========================================
+  // PRESCRIPTION STATES
+  // ==========================================
+
+  const [showPrescriptionModal, setShowPrescriptionModal] =
+    useState(false);
+
+  const [selectedAppointment, setSelectedAppointment] =
+    useState(null);
+
+  const [prescriptionLoading, setPrescriptionLoading] =
+    useState(false);
+
+  const [prescriptionForm, setPrescriptionForm] = useState({
     diagnosis: "",
-    treatmentType: "Chemical Peel & Laser Toning",
-    procedureNotes: "",
-    medicines: [{ medicineName: "Clindamycin Gel 1%", dosage: "Once at night", duration: "14 Days" }],
+    notes: "",
+    medicines: [
+      {
+        medicineName: "",
+        dosage: "",
+        frequency: "",
+        duration: "",
+        instructions: "",
+      },
+    ],
   });
 
-  useEffect(() => {
-    const loadQueue = async () => {
-      try {
-        const { data } = await API.get("/appointments");
-        setAppointments(data.appointments || []);
-      } catch {
-        setAppointments([
-          { _id: "1", patientName: "Aarav Mehta", concern: "Acne Vulgaris & Scarring", timeSlot: "10:00 AM - 11:00 AM", status: "confirmed" },
-          { _id: "2", patientName: "Simran Kaur", concern: "Hyperpigmentation (Melasma)", timeSlot: "11:00 AM - 12:00 PM", status: "in-consultation" },
-        ]);
-      }
-    };
-    loadQueue();
-  }, []);
+  // ==========================================
+  // TREATMENT STATES
+  // ==========================================
 
-  const addMedRow = () => {
-    setRxForm({
-      ...rxForm,
-      medicines: [...rxForm.medicines, { medicineName: "", dosage: "", duration: "" }],
+  const [showTreatmentModal, setShowTreatmentModal] =
+    useState(false);
+
+  const [treatmentLoading, setTreatmentLoading] =
+    useState(false);
+
+  const [treatmentForm, setTreatmentForm] = useState({
+    treatmentType: "",
+    sessionNumber: 1,
+    diagnosis: "",
+    procedureNotes: "",
+    nextFollowUpDate: "",
+    medicines: [
+      {
+        medicineName: "",
+        dosage: "",
+        duration: "",
+      },
+    ],
+  });
+
+  const [beforeImages, setBeforeImages] = useState([]);
+  const [afterImages, setAfterImages] = useState([]);
+
+  // ==========================================
+  // LOAD DOCTOR APPOINTMENTS
+  // ==========================================
+
+  const loadAppointments = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await API.get("/appointments", {
+        params: {
+          doctorId: userId,
+        },
+      });
+
+      const data =
+        response.data?.appointments ||
+        response.data ||
+        [];
+
+      const appointmentList =
+        Array.isArray(data) ? data : [];
+
+      setAppointments(appointmentList);
+
+      let foundDoctorId = "";
+
+      for (const appointment of appointmentList) {
+        if (appointment?.doctor) {
+          if (
+            typeof appointment.doctor === "object" &&
+            appointment.doctor._id
+          ) {
+            foundDoctorId = appointment.doctor._id;
+            break;
+          }
+
+          if (
+            typeof appointment.doctor === "string"
+          ) {
+            foundDoctorId = appointment.doctor;
+            break;
+          }
+        }
+      }
+
+      if (foundDoctorId) {
+        setDoctorId(foundDoctorId);
+      } else {
+        setDoctorId(userId);
+      }
+    } catch (err) {
+      console.error(
+        "Doctor appointments error:",
+        err
+      );
+
+      setError(
+        err.response?.data?.message ||
+          "Unable to load appointments."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (userId) {
+      loadAppointments();
+    } else {
+      setLoading(false);
+      setError(
+        "Doctor login information was not found."
+      );
+    }
+  }, [userId]);
+
+  // ==========================================
+  // PATIENT HELPERS
+  // ==========================================
+
+  // IMPORTANT:
+  // This function returns an ID ONLY when
+  // appointment.patient belongs to a patient user.
+  const getPatientId = (appointment) => {
+    const patient = appointment?.patient;
+
+    if (!patient) {
+      return "";
+    }
+
+    // Populated User object
+    if (typeof patient === "object") {
+      // If patient is a nested object
+      if (
+        patient.user &&
+        typeof patient.user === "object"
+      ) {
+        if (
+          patient.user.role &&
+          patient.user.role !== "patient"
+        ) {
+          return "";
+        }
+
+        return (
+          patient.user._id ||
+          patient.user.id ||
+          ""
+        );
+      }
+
+      // IMPORTANT:
+      // Do not use admin/doctor/receptionist
+      // as patient.
+      if (
+        patient.role &&
+        patient.role !== "patient"
+      ) {
+        return "";
+      }
+
+      return (
+        patient._id ||
+        patient.id ||
+        ""
+      );
+    }
+
+    // If backend only returned ID,
+    // return it for now.
+    return patient;
+  };
+
+  const getPatientName = (appointment) => {
+    const patient = appointment?.patient;
+
+    if (!patient) {
+      return "Unknown Patient";
+    }
+
+    if (typeof patient === "object") {
+      if (
+        patient.user &&
+        typeof patient.user === "object"
+      ) {
+        return (
+          patient.user.name ||
+          patient.user.fullName ||
+          "Unknown Patient"
+        );
+      }
+
+      return (
+        patient.name ||
+        patient.fullName ||
+        "Unknown Patient"
+      );
+    }
+
+    return (
+      appointment?.patientName ||
+      "Patient"
+    );
+  };
+
+  const getPatientPhone = (appointment) => {
+    const patient = appointment?.patient;
+
+    if (
+      patient &&
+      typeof patient === "object"
+    ) {
+      if (
+        patient.user &&
+        typeof patient.user === "object"
+      ) {
+        return patient.user.phone || "";
+      }
+
+      return patient.phone || "";
+    }
+
+    return appointment?.phone || "";
+  };
+
+  const getDoctorProfileId = (appointment) => {
+    if (
+      appointment?.doctor &&
+      typeof appointment.doctor === "object"
+    ) {
+      return (
+        appointment.doctor._id ||
+        appointment.doctor.id ||
+        ""
+      );
+    }
+
+    if (
+      appointment?.doctor &&
+      typeof appointment.doctor === "string"
+    ) {
+      return appointment.doctor;
+    }
+
+    return doctorId || userId;
+  };
+
+  const getAppointmentId = (appointment) => {
+    return (
+      appointment?._id ||
+      appointment?.id ||
+      ""
+    );
+  };
+
+  const getAppointmentDate = (appointment) => {
+    return (
+      appointment?.date ||
+      appointment?.appointmentDate ||
+      ""
+    );
+  };
+
+  const getAppointmentTime = (appointment) => {
+    return (
+      appointment?.timeSlot ||
+      appointment?.time ||
+      appointment?.appointmentTime ||
+      ""
+    );
+  };
+
+  const getConcern = (appointment) => {
+    return (
+      appointment?.concern ||
+      appointment?.reason ||
+      appointment?.problem ||
+      "General Consultation"
+    );
+  };
+
+  const getStatus = (appointment) => {
+    return appointment?.status || "Confirmed";
+  };
+
+  const formatDate = (date) => {
+    if (!date) {
+      return "-";
+    }
+
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return date;
+    }
+
+    return parsedDate.toLocaleDateString(
+      "en-IN",
+      {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }
+    );
+  };
+
+  const isToday = (date) => {
+    if (!date) {
+      return false;
+    }
+
+    const appointmentDate = new Date(date);
+    const today = new Date();
+
+    return (
+      appointmentDate.getDate() === today.getDate() &&
+      appointmentDate.getMonth() === today.getMonth() &&
+      appointmentDate.getFullYear() === today.getFullYear()
+    );
+  };
+
+  // ==========================================
+  // UPDATE APPOINTMENT STATUS
+  // ==========================================
+
+  const updateAppointmentStatus = async (
+    appointment,
+    newStatus
+  ) => {
+    const id = getAppointmentId(appointment);
+
+    if (!id) {
+      return;
+    }
+
+    try {
+      await API.put(
+        `/appointments/${id}`,
+        {
+          status: newStatus,
+        }
+      );
+
+      setAppointments((prev) =>
+        prev.map((item) =>
+          getAppointmentId(item) === id
+            ? {
+                ...item,
+                status: newStatus,
+              }
+            : item
+        )
+      );
+    } catch (err) {
+      console.error(
+        "Status update error:",
+        err
+      );
+
+      alert(
+        err.response?.data?.message ||
+          "Unable to update appointment status."
+      );
+    }
+  };
+
+  // ==========================================
+  // PRESCRIPTION
+  // ==========================================
+
+  const openPrescription = (appointment) => {
+    setSelectedAppointment(appointment);
+
+    setPrescriptionForm({
+      diagnosis: getConcern(appointment),
+      notes: "",
+      medicines: [
+        {
+          medicineName: "",
+          dosage: "",
+          frequency: "",
+          duration: "",
+          instructions: "",
+        },
+      ],
+    });
+
+    setShowPrescriptionModal(true);
+  };
+
+  const closePrescription = () => {
+    if (prescriptionLoading) {
+      return;
+    }
+
+    setShowPrescriptionModal(false);
+    setSelectedAppointment(null);
+
+    setPrescriptionForm({
+      diagnosis: "",
+      notes: "",
+      medicines: [
+        {
+          medicineName: "",
+          dosage: "",
+          frequency: "",
+          duration: "",
+          instructions: "",
+        },
+      ],
     });
   };
 
+  const handlePrescriptionChange = (e) => {
+    const {
+      name,
+      value,
+    } = e.target;
+
+    setPrescriptionForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleMedicineChange = (
+    index,
+    field,
+    value
+  ) => {
+    setPrescriptionForm((prev) => {
+      const medicines = [
+        ...prev.medicines,
+      ];
+
+      medicines[index] = {
+        ...medicines[index],
+        [field]: value,
+      };
+
+      return {
+        ...prev,
+        medicines,
+      };
+    });
+  };
+
+  const addMedicine = () => {
+    setPrescriptionForm((prev) => ({
+      ...prev,
+      medicines: [
+        ...prev.medicines,
+        {
+          medicineName: "",
+          dosage: "",
+          frequency: "",
+          duration: "",
+          instructions: "",
+        },
+      ],
+    }));
+  };
+
+  const removeMedicine = (index) => {
+    setPrescriptionForm((prev) => {
+      if (prev.medicines.length === 1) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        medicines:
+          prev.medicines.filter(
+            (_, medicineIndex) =>
+              medicineIndex !== index
+          ),
+      };
+    });
+  };
+
+  const createPrescription = async (e) => {
+    e.preventDefault();
+
+    if (!selectedAppointment) {
+      alert("Please select an appointment.");
+      return;
+    }
+
+    const patientId =
+      getPatientId(selectedAppointment);
+
+    const selectedDoctorId =
+      getDoctorProfileId(selectedAppointment);
+
+    if (!patientId) {
+      alert(
+        "This appointment does not contain a valid patient. Please book the appointment using a patient account."
+      );
+      return;
+    }
+
+    if (!selectedDoctorId) {
+      alert(
+        "Doctor information is missing."
+      );
+      return;
+    }
+
+    if (!prescriptionForm.diagnosis.trim()) {
+      alert("Please enter diagnosis.");
+      return;
+    }
+
+    const validMedicines =
+      prescriptionForm.medicines.filter(
+        (medicine) =>
+          medicine.medicineName.trim() &&
+          medicine.dosage.trim() &&
+          medicine.frequency.trim() &&
+          medicine.duration.trim()
+      );
+
+    if (validMedicines.length === 0) {
+      alert(
+        "Please enter at least one complete medicine."
+      );
+      return;
+    }
+
+    try {
+      setPrescriptionLoading(true);
+
+      const payload = {
+        patient: patientId,
+        doctor: selectedDoctorId,
+        appointment:
+          getAppointmentId(
+            selectedAppointment
+          ),
+        diagnosis:
+          prescriptionForm.diagnosis.trim(),
+        medicines: validMedicines,
+        notes:
+          prescriptionForm.notes.trim(),
+      };
+
+      await API.post(
+        "/prescriptions",
+        payload
+      );
+
+      alert(
+        "Prescription created successfully."
+      );
+
+      closePrescription();
+    } catch (err) {
+      console.error(
+        "Create prescription error:",
+        err
+      );
+
+      alert(
+        err.response?.data?.message ||
+          "Unable to create prescription."
+      );
+    } finally {
+      setPrescriptionLoading(false);
+    }
+  };
+
+  // ==========================================
+  // TREATMENT
+  // ==========================================
+
+  const openTreatment = (appointment) => {
+    const patientId =
+      getPatientId(appointment);
+
+    if (!patientId) {
+      alert(
+        "This appointment is not linked to a valid patient account. Please create/book the appointment using a patient account."
+      );
+      return;
+    }
+
+    setSelectedAppointment(appointment);
+
+    setTreatmentForm({
+      treatmentType: "",
+      sessionNumber: 1,
+      diagnosis: "",
+      procedureNotes: "",
+      nextFollowUpDate: "",
+      medicines: [
+        {
+          medicineName: "",
+          dosage: "",
+          duration: "",
+        },
+      ],
+    });
+
+    setBeforeImages([]);
+    setAfterImages([]);
+
+    setShowTreatmentModal(true);
+  };
+
+  const closeTreatment = () => {
+    if (treatmentLoading) {
+      return;
+    }
+
+    setShowTreatmentModal(false);
+    setSelectedAppointment(null);
+
+    setTreatmentForm({
+      treatmentType: "",
+      sessionNumber: 1,
+      diagnosis: "",
+      procedureNotes: "",
+      nextFollowUpDate: "",
+      medicines: [
+        {
+          medicineName: "",
+          dosage: "",
+          duration: "",
+        },
+      ],
+    });
+
+    setBeforeImages([]);
+    setAfterImages([]);
+  };
+
+  const handleTreatmentChange = (e) => {
+    const {
+      name,
+      value,
+    } = e.target;
+
+    setTreatmentForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleTreatmentMedicineChange = (
+    index,
+    field,
+    value
+  ) => {
+    setTreatmentForm((prev) => {
+      const medicines = [
+        ...prev.medicines,
+      ];
+
+      medicines[index] = {
+        ...medicines[index],
+        [field]: value,
+      };
+
+      return {
+        ...prev,
+        medicines,
+      };
+    });
+  };
+
+  const addTreatmentMedicine = () => {
+    setTreatmentForm((prev) => ({
+      ...prev,
+      medicines: [
+        ...prev.medicines,
+        {
+          medicineName: "",
+          dosage: "",
+          duration: "",
+        },
+      ],
+    }));
+  };
+
+  const removeTreatmentMedicine = (
+    index
+  ) => {
+    setTreatmentForm((prev) => {
+      if (prev.medicines.length === 1) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        medicines:
+          prev.medicines.filter(
+            (_, medicineIndex) =>
+              medicineIndex !== index
+          ),
+      };
+    });
+  };
+
+  const createTreatment = async (e) => {
+    e.preventDefault();
+
+    if (!selectedAppointment) {
+      alert("Please select an appointment.");
+      return;
+    }
+
+    const patientId =
+      getPatientId(selectedAppointment);
+
+    const selectedDoctorId =
+      getDoctorProfileId(
+        selectedAppointment
+      );
+
+    const appointmentId =
+      getAppointmentId(
+        selectedAppointment
+      );
+
+    if (!patientId) {
+      alert(
+        "This appointment is not linked to a valid patient account."
+      );
+      return;
+    }
+
+    if (!selectedDoctorId) {
+      alert(
+        "Doctor information is missing."
+      );
+      return;
+    }
+
+    if (!appointmentId) {
+      alert(
+        "Appointment information is missing."
+      );
+      return;
+    }
+
+    if (
+      !treatmentForm.treatmentType.trim()
+    ) {
+      alert(
+        "Please enter treatment type."
+      );
+      return;
+    }
+
+    if (
+      !treatmentForm.diagnosis.trim()
+    ) {
+      alert(
+        "Please enter diagnosis."
+      );
+      return;
+    }
+
+    try {
+      setTreatmentLoading(true);
+
+      const formData =
+        new FormData();
+
+      formData.append(
+        "patient",
+        patientId
+      );
+
+      formData.append(
+        "doctor",
+        selectedDoctorId
+      );
+
+      formData.append(
+        "appointment",
+        appointmentId
+      );
+
+      formData.append(
+        "treatmentType",
+        treatmentForm.treatmentType.trim()
+      );
+
+      formData.append(
+        "sessionNumber",
+        treatmentForm.sessionNumber
+      );
+
+      formData.append(
+        "diagnosis",
+        treatmentForm.diagnosis.trim()
+      );
+
+      formData.append(
+        "procedureNotes",
+        treatmentForm.procedureNotes.trim()
+      );
+
+      if (
+        treatmentForm.nextFollowUpDate
+      ) {
+        formData.append(
+          "nextFollowUpDate",
+          treatmentForm.nextFollowUpDate
+        );
+      }
+
+      const validMedicines =
+        treatmentForm.medicines.filter(
+          (medicine) =>
+            medicine.medicineName.trim() ||
+            medicine.dosage.trim() ||
+            medicine.duration.trim()
+        );
+
+      formData.append(
+        "prescriptions",
+        JSON.stringify(validMedicines)
+      );
+
+      beforeImages.forEach((file) => {
+        formData.append(
+          "beforeImages",
+          file
+        );
+      });
+
+      afterImages.forEach((file) => {
+        formData.append(
+          "afterImages",
+          file
+        );
+      });
+
+      await API.post(
+        "/treatments",
+        formData,
+        {
+          headers: {
+            "Content-Type":
+              "multipart/form-data",
+          },
+        }
+      );
+
+      alert(
+        "Treatment record saved successfully."
+      );
+
+      closeTreatment();
+    } catch (err) {
+      console.error(
+        "Create treatment error:",
+        err
+      );
+
+      alert(
+        err.response?.data?.message ||
+          "Unable to save treatment."
+      );
+    } finally {
+      setTreatmentLoading(false);
+    }
+  };
+
+  // ==========================================
+  // STATISTICS
+  // ==========================================
+
+  const todayAppointments =
+    appointments.filter(
+      (appointment) =>
+        isToday(
+          getAppointmentDate(
+            appointment
+          )
+        )
+    ).length;
+
+  const pendingAppointments =
+    appointments.filter(
+      (appointment) => {
+        const status =
+          getStatus(
+            appointment
+          ).toLowerCase();
+
+        return (
+          status !== "completed" &&
+          status !== "cancelled" &&
+          status !== "checked-out"
+        );
+      }
+    ).length;
+
+  const completedAppointments =
+    appointments.filter(
+      (appointment) => {
+        const status =
+          getStatus(
+            appointment
+          ).toLowerCase();
+
+        return (
+          status === "completed" ||
+          status === "checked-out"
+        );
+      }
+    ).length;
+
+  // ==========================================
+  // RENDER
+  // ==========================================
+
   return (
-    <div>
-      {/* Metrics Row */}
-      <div className="row g-3 mb-4">
-        <div className="col-md-4">
-          <div className="kpi-stat-card d-flex align-items-center gap-3">
-            <div className="kpi-stat-icon" style={{ background: "#e8f4f5", color: "#0e3b43" }}>🩺</div>
+    <div className="doctor-dashboard">
+      <div className="doctor-dashboard-container">
+
+        <div className="doctor-header">
+          <div className="doctor-header-left">
+            <div className="doctor-profile-icon">
+              <FaUserDoctor />
+            </div>
+
             <div>
-              <div className="small text-muted fw-bold text-uppercase">Today's Patient Queue</div>
-              <h3 className="fw-bold mb-0 text-dark">{appointments.length} Consultations</h3>
+              <h1>
+                Welcome, Dr.{" "}
+                {user?.name || "Doctor"}
+              </h1>
+
+              <p>
+                Manage your appointments,
+                patients and treatments.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className="refresh-button"
+            onClick={loadAppointments}
+            disabled={loading}
+          >
+            <FaRotate />
+
+            {loading
+              ? "Loading..."
+              : "Refresh"}
+          </button>
+        </div>
+
+        {error && (
+          <div
+            style={{
+              background: "#fff1f2",
+              color: "#be123c",
+              padding: "14px",
+              borderRadius: "10px",
+              marginBottom: "20px",
+            }}
+          >
+            {error}
+          </div>
+        )}
+
+        <div className="doctor-stats">
+          <div className="stat-card">
+            <div className="stat-icon">
+              <FaCalendarCheck />
+            </div>
+
+            <div>
+              <span>
+                Today's Appointments
+              </span>
+
+              <strong>
+                {todayAppointments}
+              </strong>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon">
+              <FaClock />
+            </div>
+
+            <div>
+              <span>Pending</span>
+
+              <strong>
+                {pendingAppointments}
+              </strong>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon">
+              <FaCircleCheck />
+            </div>
+
+            <div>
+              <span>Completed</span>
+
+              <strong>
+                {completedAppointments}
+              </strong>
+            </div>
+          </div>
+
+          <div className="stat-card">
+            <div className="stat-icon">
+              <FaUsers />
+            </div>
+
+            <div>
+              <span>
+                Total Appointments
+              </span>
+
+              <strong>
+                {appointments.length}
+              </strong>
             </div>
           </div>
         </div>
-        <div className="col-md-4">
-          <div className="kpi-stat-card d-flex align-items-center gap-3">
-            <div className="kpi-stat-icon" style={{ background: "#fbf3ea", color: "#c5a880" }}>📸</div>
+
+        <section className="appointments-section">
+          <div className="section-header">
             <div>
-              <div className="small text-muted fw-bold text-uppercase">Photo Comparisons</div>
-              <h3 className="fw-bold mb-0 text-dark">12 Active Cases</h3>
+              <h2>My Appointments</h2>
+
+              <p>
+                View and manage your scheduled
+                patient appointments.
+              </p>
             </div>
           </div>
-        </div>
-        <div className="col-md-4">
-          <div className="kpi-stat-card d-flex align-items-center gap-3">
-            <div className="kpi-stat-icon" style={{ background: "#eaf7ee", color: "#198754" }}>✅</div>
+
+          {loading ? (
+            <div
+              style={{
+                background: "white",
+                padding: "50px",
+                textAlign: "center",
+                borderRadius: "15px",
+              }}
+            >
+              Loading appointments...
+            </div>
+          ) : appointments.length === 0 ? (
+            <div
+              style={{
+                background: "white",
+                padding: "50px",
+                textAlign: "center",
+                borderRadius: "15px",
+              }}
+            >
+              <FaCalendarCheck
+                style={{
+                  fontSize: "40px",
+                  color: "#9ca3af",
+                  marginBottom: "15px",
+                }}
+              />
+
+              <h3>No Appointments</h3>
+
+              <p>
+                You currently have no
+                appointments.
+              </p>
+            </div>
+          ) : (
+            <div className="appointment-list">
+              {appointments.map(
+                (appointment) => {
+                  const appointmentId =
+                    getAppointmentId(
+                      appointment
+                    );
+
+                  const patientName =
+                    getPatientName(
+                      appointment
+                    );
+
+                  const patientPhone =
+                    getPatientPhone(
+                      appointment
+                    );
+
+                  const appointmentDate =
+                    getAppointmentDate(
+                      appointment
+                    );
+
+                  const appointmentTime =
+                    getAppointmentTime(
+                      appointment
+                    );
+
+                  const concern =
+                    getConcern(
+                      appointment
+                    );
+
+                  const status =
+                    getStatus(
+                      appointment
+                    );
+
+                  const patientId =
+                    getPatientId(
+                      appointment
+                    );
+
+                  return (
+                    <div
+                      className="appointment-card"
+                      key={appointmentId}
+                    >
+                      <div className="appointment-card-main">
+                        <div className="patient-info">
+                          <div className="patient-avatar">
+                            {patientName
+                              .charAt(0)
+                              .toUpperCase()}
+                          </div>
+
+                          <div>
+                            <h3>
+                              {patientName}
+                            </h3>
+
+                            {patientPhone && (
+                              <p>
+                                {patientPhone}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="appointment-status-wrapper">
+                          <span
+                            className={`status-badge ${status
+                              .toLowerCase()
+                              .replace(
+                                /\s+/g,
+                                "-"
+                              )}`}
+                          >
+                            {status}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="appointment-details">
+                        <div className="appointment-detail">
+                          <span>Date</span>
+
+                          <strong>
+                            {formatDate(
+                              appointmentDate
+                            )}
+                          </strong>
+                        </div>
+
+                        <div className="appointment-detail">
+                          <span>Time</span>
+
+                          <strong>
+                            {appointmentTime ||
+                              "-"}
+                          </strong>
+                        </div>
+
+                        <div className="appointment-detail">
+                          <span>Concern</span>
+
+                          <strong>
+                            {concern}
+                          </strong>
+                        </div>
+                      </div>
+
+                      <div className="appointment-card-footer">
+                        <div className="status-control">
+                          <label>
+                            Update Status
+                          </label>
+
+                          <select
+                            value={status}
+                            onChange={(e) =>
+                              updateAppointmentStatus(
+                                appointment,
+                                e.target.value
+                              )
+                            }
+                          >
+                            <option value="Confirmed">
+                              Confirmed
+                            </option>
+
+                            <option value="Checked-In">
+                              Checked-In
+                            </option>
+
+                            <option value="In-Consultation">
+                              In-Consultation
+                            </option>
+
+                            <option value="Completed">
+                              Completed
+                            </option>
+
+                            <option value="Checked-Out">
+                              Checked-Out
+                            </option>
+
+                            <option value="Cancelled">
+                              Cancelled
+                            </option>
+                          </select>
+                        </div>
+
+                        <div
+                          style={{
+                            display: "flex",
+                            gap: "10px",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <button
+                            type="button"
+                            className="doctor-action-button"
+                            onClick={() =>
+                              openTreatment(
+                                appointment
+                              )
+                            }
+                            disabled={!patientId}
+                            title={
+                              !patientId
+                                ? "This appointment is not linked to a patient account"
+                                : "Add treatment"
+                            }
+                          >
+                            <FaNotesMedical />
+                            Add Treatment
+                          </button>
+
+                          <button
+                            type="button"
+                            className="doctor-action-button"
+                            onClick={() =>
+                              navigate(
+                                `/treatments/patient/${patientId}`
+                              )
+                            }
+                            disabled={!patientId}
+                          >
+                            Treatment History
+                            <FaArrowRight />
+                          </button>
+
+                          <button
+                            type="button"
+                            className="doctor-action-button"
+                            onClick={() =>
+                              openPrescription(
+                                appointment
+                              )
+                            }
+                            disabled={!patientId}
+                          >
+                            <FaFilePrescription />
+                            Create Prescription
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+              )}
+            </div>
+          )}
+        </section>
+
+        <section className="doctor-quick-section">
+          <div className="section-header">
             <div>
-              <div className="small text-muted fw-bold text-uppercase">Procedures Completed</div>
-              <h3 className="fw-bold mb-0 text-dark">8 Sessions</h3>
+              <h2>Quick Actions</h2>
+
+              <p>
+                Quickly access your doctor
+                management tools.
+              </p>
             </div>
           </div>
+
+          <div className="quick-action-grid">
+            <button
+              type="button"
+              className="quick-action-card"
+              onClick={() =>
+                navigate(
+                  "/patient-records"
+                )
+              }
+            >
+              <div className="quick-action-icon">
+                <FaUsers />
+              </div>
+
+              <div>
+                <h3>Patient Records</h3>
+
+                <p>
+                  View patient information
+                  and medical history.
+                </p>
+              </div>
+
+              <FaArrowRight className="quick-arrow" />
+            </button>
+
+            <button
+              type="button"
+              className="quick-action-card"
+              onClick={() =>
+                navigate(
+                  "/prescriptions"
+                )
+              }
+            >
+              <div className="quick-action-icon">
+                <FaFilePrescription />
+              </div>
+
+              <div>
+                <h3>Prescriptions</h3>
+
+                <p>
+                  View and manage patient
+                  prescriptions.
+                </p>
+              </div>
+
+              <FaArrowRight className="quick-arrow" />
+            </button>
+
+            <button
+              type="button"
+              className="quick-action-card"
+              onClick={() => {
+                const firstPatient =
+                  appointments.find(
+                    (appointment) =>
+                      getPatientId(
+                        appointment
+                      )
+                  );
+
+                const patientId =
+                  firstPatient
+                    ? getPatientId(
+                        firstPatient
+                      )
+                    : "";
+
+                if (patientId) {
+                  navigate(
+                    `/treatments/patient/${patientId}`
+                  );
+                } else {
+                  alert(
+                    "No valid patient appointment found."
+                  );
+                }
+              }}
+            >
+              <div className="quick-action-icon">
+                <FaCircleCheck />
+              </div>
+
+              <div>
+                <h3>
+                  Treatment Tracking
+                </h3>
+
+                <p>
+                  Track patient treatments
+                  and follow-ups.
+                </p>
+              </div>
+
+              <FaArrowRight className="quick-arrow" />
+            </button>
+          </div>
+        </section>
+
+        <div className="doctor-dashboard-footer">
+          <p>
+            DermCare Doctor Dashboard
+          </p>
         </div>
       </div>
 
-      <div className="row g-4">
-        {/* Left: Patient Queue List */}
-        <div className="col-lg-5">
-          <div className="clinic-card h-100">
-            <div className="d-flex justify-content-between align-items-center mb-3">
-              <h5 className="fw-bold mb-0" style={{ color: "var(--derm-teal)" }}>Today's Clinical Queue</h5>
-              <span className="badge bg-light text-dark border">Live Feed</span>
-            </div>
+      {/* ==========================================
+          PRESCRIPTION MODAL
+          ========================================== */}
 
-            <div className="d-flex flex-column gap-3">
-              {appointments.map((item) => (
-                <div
-                  key={item._id}
-                  onClick={() => setSelectedPatient(item)}
-                  className={`p-3 rounded-4 border cursor-pointer ${
-                    selectedPatient?._id === item._id ? "border-primary bg-primary bg-opacity-10" : "bg-light"
-                  }`}
-                  style={{ cursor: "pointer", transition: "0.2s ease" }}
-                >
-                  <div className="d-flex justify-content-between align-items-center mb-1">
-                    <h6 className="fw-bold mb-0 text-dark">{item.patientName || "Walk-In Patient"}</h6>
-                    <span className="badge bg-secondary-subtle text-secondary small">{item.timeSlot}</span>
+      {showPrescriptionModal &&
+        selectedAppointment && (
+          <div
+            className="prescription-modal-overlay"
+            onClick={closePrescription}
+          >
+            <div
+              className="prescription-create-modal"
+              onClick={(e) =>
+                e.stopPropagation()
+              }
+            >
+              <div className="prescription-create-header">
+                <div>
+                  <div className="prescription-create-title">
+                    <FaFilePrescription />
+
+                    <h2>
+                      Create Prescription
+                    </h2>
                   </div>
-                  <p className="small text-muted mb-2">Concern: <strong>{item.concern}</strong></p>
-                  <button className="btn btn-sm btn-outline-primary rounded-pill px-3">
-                    Open Consultation Room →
+
+                  <p>
+                    Patient:{" "}
+                    <strong>
+                      {getPatientName(
+                        selectedAppointment
+                      )}
+                    </strong>
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  className="prescription-close-button"
+                  onClick={
+                    closePrescription
+                  }
+                  disabled={
+                    prescriptionLoading
+                  }
+                >
+                  <FaXmark />
+                </button>
+              </div>
+
+              <form
+                onSubmit={
+                  createPrescription
+                }
+              >
+                <div className="prescription-create-body">
+                  <div className="prescription-form-group">
+                    <label>
+                      Diagnosis *
+                    </label>
+
+                    <input
+                      type="text"
+                      name="diagnosis"
+                      value={
+                        prescriptionForm.diagnosis
+                      }
+                      onChange={
+                        handlePrescriptionChange
+                      }
+                      placeholder="Enter diagnosis"
+                      required
+                    />
+                  </div>
+
+                  <div className="medicine-form-section">
+                    <div className="medicine-section-header">
+                      <div>
+                        <h3>Medicines</h3>
+
+                        <p>
+                          Add medicines prescribed
+                          to the patient.
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="add-medicine-button"
+                        onClick={
+                          addMedicine
+                        }
+                      >
+                        <FaPlus />
+                        Add Medicine
+                      </button>
+                    </div>
+
+                    {prescriptionForm.medicines.map(
+                      (
+                        medicine,
+                        index
+                      ) => (
+                        <div
+                          className="medicine-form-card"
+                          key={index}
+                        >
+                          <div className="medicine-form-number">
+                            {index + 1}
+                          </div>
+
+                          <div className="medicine-form-fields">
+                            <div className="prescription-form-group">
+                              <label>
+                                Medicine Name *
+                              </label>
+
+                              <select
+                                value={
+                                  medicine.medicineName
+                                }
+                                onChange={(
+                                  event
+                                ) =>
+                                  handleMedicineChange(
+                                    index,
+                                    "medicineName",
+                                    event.target.value
+                                  )
+                                }
+                                required
+                                style={{
+                                  width: "100%",
+                                  height: "42px",
+                                  border:
+                                    "1px solid #d1d5db",
+                                  borderRadius:
+                                    "9px",
+                                  padding:
+                                    "0 10px",
+                                  fontSize:
+                                    "12px",
+                                  background:
+                                    "#ffffff",
+                                }}
+                              >
+                                <option value="">
+                                  Select clinic product
+                                </option>
+
+                                {clinicProducts.map(
+                                  (product) => (
+                                    <option
+                                      key={
+                                        product.id
+                                      }
+                                      value={
+                                        product.name
+                                      }
+                                    >
+                                      {
+                                        product.name
+                                      }{" "}
+                                      — ₹
+                                      {
+                                        product.price
+                                      }
+                                    </option>
+                                  )
+                                )}
+                              </select>
+                            </div>
+
+                            <div className="medicine-three-fields">
+                              <div className="prescription-form-group">
+                                <label>
+                                  Dosage *
+                                </label>
+
+                                <input
+                                  type="text"
+                                  value={
+                                    medicine.dosage
+                                  }
+                                  onChange={(e) =>
+                                    handleMedicineChange(
+                                      index,
+                                      "dosage",
+                                      e.target.value
+                                    )
+                                  }
+                                  placeholder="e.g. 1%"
+                                  required
+                                />
+                              </div>
+
+                              <div className="prescription-form-group">
+                                <label>
+                                  Frequency *
+                                </label>
+
+                                <input
+                                  type="text"
+                                  value={
+                                    medicine.frequency
+                                  }
+                                  onChange={(e) =>
+                                    handleMedicineChange(
+                                      index,
+                                      "frequency",
+                                      e.target.value
+                                    )
+                                  }
+                                  placeholder="e.g. Once daily"
+                                  required
+                                />
+                              </div>
+
+                              <div className="prescription-form-group">
+                                <label>
+                                  Duration *
+                                </label>
+
+                                <input
+                                  type="text"
+                                  value={
+                                    medicine.duration
+                                  }
+                                  onChange={(e) =>
+                                    handleMedicineChange(
+                                      index,
+                                      "duration",
+                                      e.target.value
+                                    )
+                                  }
+                                  placeholder="e.g. 14 Days"
+                                  required
+                                />
+                              </div>
+                            </div>
+
+                            <div className="prescription-form-group">
+                              <label>
+                                Instructions
+                              </label>
+
+                              <input
+                                type="text"
+                                value={
+                                  medicine.instructions
+                                }
+                                onChange={(e) =>
+                                  handleMedicineChange(
+                                    index,
+                                    "instructions",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="e.g. Apply at night"
+                              />
+                            </div>
+                          </div>
+
+                          {prescriptionForm
+                            .medicines.length >
+                            1 && (
+                            <button
+                              type="button"
+                              className="remove-medicine-button"
+                              onClick={() =>
+                                removeMedicine(
+                                  index
+                                )
+                              }
+                              title="Remove medicine"
+                            >
+                              <FaTrash />
+                            </button>
+                          )}
+                        </div>
+                      )
+                    )}
+                  </div>
+
+                  <div className="prescription-form-group">
+                    <label>
+                      Doctor's Notes
+                    </label>
+
+                    <textarea
+                      name="notes"
+                      value={
+                        prescriptionForm.notes
+                      }
+                      onChange={
+                        handlePrescriptionChange
+                      }
+                      placeholder="Enter additional instructions or notes..."
+                      rows="4"
+                    />
+                  </div>
+                </div>
+
+                <div className="prescription-create-footer">
+                  <button
+                    type="button"
+                    className="prescription-cancel-button"
+                    onClick={
+                      closePrescription
+                    }
+                    disabled={
+                      prescriptionLoading
+                    }
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="submit"
+                    className="prescription-save-button"
+                    disabled={
+                      prescriptionLoading
+                    }
+                  >
+                    {prescriptionLoading
+                      ? "Creating..."
+                      : "Create Prescription"}
                   </button>
                 </div>
-              ))}
+              </form>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Right: E-Prescription & Treatment Logger */}
-        <div className="col-lg-7">
-          <div className="clinic-card">
-            <div className="border-bottom pb-3 mb-3">
-              <span className="badge bg-light text-primary border rounded-pill mb-1">E-Prescription & Clinical Notes</span>
-              <h5 className="fw-bold mb-0 text-dark">
-                {selectedPatient ? `Consulting: ${selectedPatient.patientName}` : "Select a Patient from Queue"}
-              </h5>
-            </div>
+      {/* ==========================================
+          TREATMENT MODAL
+          ========================================== */}
 
-            <form onSubmit={(e) => { e.preventDefault(); alert("Prescription and Clinical Timeline Updated!"); }}>
-              <div className="mb-3">
-                <label className="form-label small fw-bold">Primary Diagnosis</label>
-                <input
-                  type="text"
-                  className="form-control rounded-3"
-                  placeholder="e.g. Grade 2 Comedonal Acne with Post-Inflammatory Erythema"
-                  value={rxForm.diagnosis}
-                  onChange={(e) => setRxForm({ ...rxForm, diagnosis: e.target.value })}
-                  required
-                />
-              </div>
+      {showTreatmentModal &&
+        selectedAppointment && (
+          <div
+            className="prescription-modal-overlay"
+            onClick={closeTreatment}
+          >
+            <div
+              className="prescription-create-modal treatment-modal"
+              onClick={(e) =>
+                e.stopPropagation()
+              }
+            >
+              <div className="prescription-create-header">
+                <div>
+                  <div className="prescription-create-title">
+                    <FaNotesMedical />
 
-              <div className="mb-3">
-                <label className="form-label small fw-bold">Prescribed Procedure / Treatment Type</label>
-                <select
-                  className="form-select rounded-3"
-                  value={rxForm.treatmentType}
-                  onChange={(e) => setRxForm({ ...rxForm, treatmentType: e.target.value })}
-                >
-                  <option value="Salicylic Acid Clinical Peel">Salicylic Acid 20% Chemical Peel</option>
-                  <option value="Q-Switched Nd:YAG Laser">Q-Switched Nd:YAG Laser Toning</option>
-                  <option value="Scalp GFC / PRP Therapy">Scalp Growth Factor (GFC) PRP</option>
-                  <option value="Hydra-Dermabrasion Facial">Medical Hydra-Facial Deep Cleanse</option>
-                </select>
-              </div>
+                    <h2>
+                      Add Treatment
+                    </h2>
+                  </div>
 
-              {/* Medicine Prescription Table */}
-              <div className="mb-3">
-                <div className="d-flex justify-content-between align-items-center mb-2">
-                  <label className="form-label small fw-bold mb-0">Medications & Regimen</label>
-                  <button type="button" onClick={addMedRow} className="btn btn-sm btn-light border rounded-pill">
-                    + Add Drug
-                  </button>
+                  <p>
+                    Patient:{" "}
+                    <strong>
+                      {getPatientName(
+                        selectedAppointment
+                      )}
+                    </strong>
+                  </p>
                 </div>
-                {rxForm.medicines.map((med, idx) => (
-                  <div key={idx} className="row g-2 mb-2">
-                    <div className="col-5">
+
+                <button
+                  type="button"
+                  className="prescription-close-button"
+                  onClick={
+                    closeTreatment
+                  }
+                  disabled={
+                    treatmentLoading
+                  }
+                >
+                  <FaXmark />
+                </button>
+              </div>
+
+              <form
+                onSubmit={
+                  createTreatment
+                }
+              >
+                <div className="prescription-create-body">
+                  <div className="prescription-form-group">
+                    <label>
+                      Treatment Type *
+                    </label>
+
+                    <input
+                      type="text"
+                      name="treatmentType"
+                      value={
+                        treatmentForm.treatmentType
+                      }
+                      onChange={
+                        handleTreatmentChange
+                      }
+                      placeholder="e.g. Acne Treatment, Hair PRP, Chemical Peel"
+                      required
+                    />
+                  </div>
+
+                  <div className="medicine-three-fields">
+                    <div className="prescription-form-group">
+                      <label>
+                        Session Number
+                      </label>
+
                       <input
-                        type="text"
-                        className="form-control form-control-sm rounded-2"
-                        placeholder="Medicine name"
-                        value={med.medicineName}
-                        onChange={(e) => {
-                          const updated = [...rxForm.medicines];
-                          updated[idx].medicineName = e.target.value;
-                          setRxForm({ ...rxForm, medicines: updated });
-                        }}
+                        type="number"
+                        name="sessionNumber"
+                        min="1"
+                        value={
+                          treatmentForm.sessionNumber
+                        }
+                        onChange={
+                          handleTreatmentChange
+                        }
                       />
                     </div>
-                    <div className="col-4">
+
+                    <div className="prescription-form-group">
+                      <label>
+                        Next Follow-Up
+                      </label>
+
                       <input
-                        type="text"
-                        className="form-control form-control-sm rounded-2"
-                        placeholder="Dosage (e.g. 1-0-1)"
-                        value={med.dosage}
-                        onChange={(e) => {
-                          const updated = [...rxForm.medicines];
-                          updated[idx].dosage = e.target.value;
-                          setRxForm({ ...rxForm, medicines: updated });
-                        }}
-                      />
-                    </div>
-                    <div className="col-3">
-                      <input
-                        type="text"
-                        className="form-control form-control-sm rounded-2"
-                        placeholder="Duration"
-                        value={med.duration}
-                        onChange={(e) => {
-                          const updated = [...rxForm.medicines];
-                          updated[idx].duration = e.target.value;
-                          setRxForm({ ...rxForm, medicines: updated });
-                        }}
+                        type="date"
+                        name="nextFollowUpDate"
+                        value={
+                          treatmentForm.nextFollowUpDate
+                        }
+                        onChange={
+                          handleTreatmentChange
+                        }
                       />
                     </div>
                   </div>
-                ))}
-              </div>
 
-              <div className="mb-4">
-                <label className="form-label small fw-bold">Doctor's Clinical Instructions</label>
-                <textarea
-                  className="form-control rounded-3"
-                  rows="2"
-                  placeholder="Strictly apply mineral SPF 50 every 3 hours. Avoid direct active sun exposure for 48h."
-                  value={rxForm.procedureNotes}
-                  onChange={(e) => setRxForm({ ...rxForm, procedureNotes: e.target.value })}
-                ></textarea>
-              </div>
+                  <div className="prescription-form-group">
+                    <label>
+                      Diagnosis *
+                    </label>
 
-              <button type="submit" className="btn btn-primary w-100 py-2 rounded-pill fw-bold">
-                Save & Issue Clinical E-Rx →
-              </button>
-            </form>
+                    <textarea
+                      name="diagnosis"
+                      value={
+                        treatmentForm.diagnosis
+                      }
+                      onChange={
+                        handleTreatmentChange
+                      }
+                      placeholder="Enter patient diagnosis..."
+                      rows="3"
+                      required
+                    />
+                  </div>
+
+                  <div className="prescription-form-group">
+                    <label>
+                      Procedure / Clinical Notes
+                    </label>
+
+                    <textarea
+                      name="procedureNotes"
+                      value={
+                        treatmentForm.procedureNotes
+                      }
+                      onChange={
+                        handleTreatmentChange
+                      }
+                      placeholder="Enter treatment procedure and clinical notes..."
+                      rows="4"
+                    />
+                  </div>
+
+                  <div className="prescription-form-group">
+                    <label>
+                      <FaImage />
+                      Before Images
+                    </label>
+
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={(e) =>
+                        setBeforeImages(
+                          Array.from(
+                            e.target.files
+                          )
+                        )
+                      }
+                    />
+
+                    {beforeImages.length >
+                      0 && (
+                      <small>
+                        {
+                          beforeImages.length
+                        }{" "}
+                        image(s) selected
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="prescription-form-group">
+                    <label>
+                      <FaImage />
+                      After Images
+                    </label>
+
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={(e) =>
+                        setAfterImages(
+                          Array.from(
+                            e.target.files
+                          )
+                        )
+                      }
+                    />
+
+                    {afterImages.length >
+                      0 && (
+                      <small>
+                        {
+                          afterImages.length
+                        }{" "}
+                        image(s) selected
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="medicine-form-section">
+                    <div className="medicine-section-header">
+                      <div>
+                        <h3>
+                          Treatment Medicines
+                        </h3>
+
+                        <p>
+                          Add medicines related
+                          to this treatment.
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="add-medicine-button"
+                        onClick={
+                          addTreatmentMedicine
+                        }
+                      >
+                        <FaPlus />
+                        Add Medicine
+                      </button>
+                    </div>
+
+                    {treatmentForm.medicines.map(
+                      (
+                        medicine,
+                        index
+                      ) => (
+                        <div
+                          className="medicine-form-card"
+                          key={index}
+                        >
+                          <div className="medicine-form-number">
+                            {index + 1}
+                          </div>
+
+                          <div className="medicine-form-fields">
+                            <div className="prescription-form-group">
+                              <label>
+                                Medicine Name
+                              </label>
+
+                              <input
+                                type="text"
+                                value={
+                                  medicine.medicineName
+                                }
+                                onChange={(e) =>
+                                  handleTreatmentMedicineChange(
+                                    index,
+                                    "medicineName",
+                                    e.target.value
+                                  )
+                                }
+                                placeholder="e.g. Adapalene"
+                              />
+                            </div>
+
+                            <div className="medicine-three-fields">
+                              <div className="prescription-form-group">
+                                <label>
+                                  Dosage
+                                </label>
+
+                                <input
+                                  type="text"
+                                  value={
+                                    medicine.dosage
+                                  }
+                                  onChange={(e) =>
+                                    handleTreatmentMedicineChange(
+                                      index,
+                                      "dosage",
+                                      e.target.value
+                                    )
+                                  }
+                                  placeholder="e.g. 0.1%"
+                                />
+                              </div>
+
+                              <div className="prescription-form-group">
+                                <label>
+                                  Duration
+                                </label>
+
+                                <input
+                                  type="text"
+                                  value={
+                                    medicine.duration
+                                  }
+                                  onChange={(e) =>
+                                    handleTreatmentMedicineChange(
+                                      index,
+                                      "duration",
+                                      e.target.value
+                                    )
+                                  }
+                                  placeholder="e.g. 30 Days"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {treatmentForm
+                            .medicines.length >
+                            1 && (
+                            <button
+                              type="button"
+                              className="remove-medicine-button"
+                              onClick={() =>
+                                removeTreatmentMedicine(
+                                  index
+                                )
+                              }
+                            >
+                              <FaTrash />
+                            </button>
+                          )}
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
+
+                <div className="prescription-create-footer">
+                  <button
+                    type="button"
+                    className="prescription-cancel-button"
+                    onClick={
+                      closeTreatment
+                    }
+                    disabled={
+                      treatmentLoading
+                    }
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    type="submit"
+                    className="prescription-save-button"
+                    disabled={
+                      treatmentLoading
+                    }
+                  >
+                    {treatmentLoading
+                      ? "Saving Treatment..."
+                      : "Save Treatment"}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
-      </div>
+        )}
     </div>
   );
-};
+}
 
 export default DoctorDashboard;
