@@ -1,17 +1,14 @@
 import React, { useState, useContext } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 
-// API, Context & Protected Route
 import API from "./api/axios";
 import { AuthContext, AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-// Layout & Global Components
 import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
 import AIAssistantWidget from "./components/AIAssistantWidget/AIAssistantWidget";
 
-// Pages
 import Home from "./pages/Home/Home";
 import Login from "./pages/Login/Login";
 import Register from "./pages/Register/Register";
@@ -24,54 +21,49 @@ import PatientDashboard from "./pages/Dashboard/PatientDashboard";
 import Appointment from "./pages/Appointment/Appointment";
 import ThankYou from "./pages/Appointment/ThankYou";
 
-// Appointment Management
-import AppointmentManagement from "./pages/AppointmentManagement/AppointmentManagement";
-
 import Products from "./pages/Products/Products";
 import Services from "./pages/Services/Services";
 import ServiceOffers from "./pages/Offers/ServiceOffers";
 
 import PatientHistory from "./pages/Treatments/PatientHistory";
-
-// Patient Records
 import PatientRecords from "./pages/PatientRecords/PatientRecords";
-
-// Patient Profile
-import PatientProfile from "./pages/PatientProfile/PatientProfile";
-
-// My Appointments
 import MyAppointments from "./pages/MyAppointments/MyAppointments";
 
-// Billing
 import Billing from "./pages/Billing/Billing";
-
-// Prescriptions
-import Prescriptions from "./pages/Prescriptions/Prescriptions";
 
 import NotFound from "./pages/NotFound/NotFound";
 
-
-// ========================================
-// ROLE DASHBOARD
-// ========================================
+// ======================================================
+// ROLE BASED DASHBOARD
+// ======================================================
 
 function RoleDashboard() {
   const { user } = useContext(AuthContext);
 
   const role = user?.role?.toLowerCase().trim();
 
-  if (role === "patient") return <PatientDashboard />;
-  if (role === "doctor") return <DoctorDashboard />;
-  if (role === "receptionist") return <ReceptionistDashboard />;
-  if (role === "admin") return <AdminDashboard />;
+  if (role === "patient") {
+    return <PatientDashboard />;
+  }
+
+  if (role === "doctor") {
+    return <DoctorDashboard />;
+  }
+
+  if (role === "receptionist") {
+    return <ReceptionistDashboard />;
+  }
+
+  if (role === "admin") {
+    return <AdminDashboard />;
+  }
 
   return <Navigate to="/login" replace />;
 }
 
-
-// ========================================
+// ======================================================
 // APP CONTENT
-// ========================================
+// ======================================================
 
 function AppContent() {
   const { user } = useContext(AuthContext);
@@ -81,11 +73,7 @@ function AppContent() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [orderProcessing, setOrderProcessing] = useState(false);
 
-
-  // ========================================
   // ADD TO CART
-  // ========================================
-
   const addToCart = (product) => {
     setCart((prev) => {
       const existing = prev.find(
@@ -95,10 +83,7 @@ function AppContent() {
       if (existing) {
         return prev.map((item) =>
           item.id === product.id
-            ? {
-                ...item,
-                qty: item.qty + 1,
-              }
+            ? { ...item, qty: item.qty + 1 }
             : item
         );
       }
@@ -115,43 +100,27 @@ function AppContent() {
     setIsCartOpen(true);
   };
 
-
-  // ========================================
   // REMOVE FROM CART
-  // ========================================
-
   const removeFromCart = (id) => {
     setCart((prev) =>
-      prev.filter(
-        (item) => item.id !== id
-      )
+      prev.filter((item) => item.id !== id)
     );
   };
 
-
-  // ========================================
   // CART TOTAL
-  // ========================================
-
   const cartTotal = cart.reduce(
-    (acc, item) =>
-      acc + item.price * item.qty,
+    (total, item) =>
+      total + item.price * item.qty,
     0
   );
 
-
-  // ========================================
   // CHECKOUT
-  // ========================================
-
   const handleCheckout = async () => {
     if (!user) {
       setIsCartOpen(false);
-
       alert(
         "Please sign in as a Patient to place your order and track pickup."
       );
-
       navigate("/login");
       return;
     }
@@ -159,7 +128,6 @@ function AppContent() {
     setOrderProcessing(true);
 
     const pickupDate = new Date();
-
     pickupDate.setDate(
       pickupDate.getDate() + 1
     );
@@ -175,34 +143,21 @@ function AppContent() {
         }
       );
 
-
     const orderPayload = {
       orderId: `ORD-${Math.floor(
         100000 + Math.random() * 900000
       )}`,
-
       items: [...cart],
-
       totalAmount: cartTotal,
-
       orderDate:
-        new Date().toLocaleDateString(
-          "en-IN"
-        ),
-
+        new Date().toLocaleDateString("en-IN"),
       pickupDate: pickupDateString,
-
-      pickupTimeSlot:
-        "10:00 AM - 07:00 PM",
-
+      pickupTimeSlot: "10:00 AM - 07:00 PM",
       pickupAddress:
         "DermCare Clinic, 2nd Floor, Healthcare Arcade, Opp. City Mall",
-
       userEmail: user.email,
-
       userName: user.name,
     };
-
 
     try {
       await API.post(
@@ -212,11 +167,9 @@ function AppContent() {
     } catch (err) {
       console.warn(
         "Email service notice:",
-        err.response?.data ||
-          err.message
+        err.response?.data || err.message
       );
     }
-
 
     const existingOrders =
       JSON.parse(
@@ -224,7 +177,6 @@ function AppContent() {
           `dermcare_orders_${user.email}`
         ) || "[]"
       );
-
 
     localStorage.setItem(
       `dermcare_orders_${user.email}`,
@@ -234,13 +186,9 @@ function AppContent() {
       ])
     );
 
-
     setCart([]);
-
     setOrderProcessing(false);
-
     setIsCartOpen(false);
-
 
     navigate("/dashboard", {
       state: {
@@ -249,16 +197,12 @@ function AppContent() {
     });
   };
 
-
-  // ========================================
-  // UI
-  // ========================================
-
   return (
     <>
       <Navbar
         cartCount={cart.reduce(
-          (a, b) => a + b.qty,
+          (total, item) =>
+            total + item.qty,
           0
         )}
         onOpenCart={() =>
@@ -266,22 +210,15 @@ function AppContent() {
         }
       />
 
-      <main
-        style={{
-          minHeight: "85vh",
-        }}
-      >
+      <main style={{ minHeight: "85vh" }}>
         <Routes>
 
-          {/* HOME */}
+          {/* PUBLIC PAGES */}
 
           <Route
             path="/"
             element={<Home />}
           />
-
-
-          {/* PUBLIC PAGES */}
 
           <Route
             path="/services"
@@ -313,9 +250,6 @@ function AppContent() {
             element={<Register />}
           />
 
-
-          {/* APPOINTMENT */}
-
           <Route
             path="/appointment"
             element={<Appointment />}
@@ -325,7 +259,6 @@ function AppContent() {
             path="/thank-you"
             element={<ThankYou />}
           />
-
 
           {/* DASHBOARD */}
 
@@ -338,19 +271,6 @@ function AppContent() {
             }
           />
 
-
-          {/* APPOINTMENT MANAGEMENT */}
-
-          <Route
-            path="/appointment-management"
-            element={
-              <ProtectedRoute>
-                <AppointmentManagement />
-              </ProtectedRoute>
-            }
-          />
-
-
           {/* PATIENT RECORDS */}
 
           <Route
@@ -361,19 +281,6 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-
-
-          {/* PATIENT PROFILE */}
-
-          <Route
-            path="/patient-profile"
-            element={
-              <ProtectedRoute>
-                <PatientProfile />
-              </ProtectedRoute>
-            }
-          />
-
 
           {/* MY APPOINTMENTS */}
 
@@ -386,8 +293,7 @@ function AppContent() {
             }
           />
 
-
-          {/* PATIENT TREATMENT HISTORY */}
+          {/* TREATMENT HISTORY */}
 
           <Route
             path="/treatments/patient/:patientId"
@@ -397,7 +303,6 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-
 
           {/* BILLING */}
 
@@ -410,19 +315,6 @@ function AppContent() {
             }
           />
 
-
-          {/* PRESCRIPTIONS */}
-
-          <Route
-            path="/prescriptions"
-            element={
-              <ProtectedRoute>
-                <Prescriptions />
-              </ProtectedRoute>
-            }
-          />
-
-
           {/* 404 */}
 
           <Route
@@ -433,13 +325,9 @@ function AppContent() {
         </Routes>
       </main>
 
-
-      {/* FOOTER */}
-
       <Footer />
 
-
-      {/* SHOPPING CART */}
+      {/* CART */}
 
       {isCartOpen && (
         <div
@@ -464,31 +352,27 @@ function AppContent() {
                 setIsCartOpen(false)
               }
               className="btn-close"
-            ></button>
+            />
 
           </div>
 
-
-          <div className="flex-grow-1 overflow-auto pe-1">
+          <div className="flex-grow-1 overflow-auto">
 
             {cart.length === 0 ? (
 
               <div className="text-center text-muted py-5">
-
-                <div className="fs-1 mb-2">
+                <div className="fs-1">
                   🛍️
                 </div>
 
                 <p>
                   Your bag is empty.
                 </p>
-
               </div>
 
             ) : (
 
               cart.map((item) => (
-
                 <div
                   key={item.id}
                   className="d-flex align-items-center gap-3 mb-3 p-2 bg-light rounded-3"
@@ -507,7 +391,7 @@ function AppContent() {
 
                   <div className="flex-grow-1">
 
-                    <div className="small fw-bold text-dark">
+                    <div className="small fw-bold">
                       {item.name}
                     </div>
 
@@ -527,16 +411,13 @@ function AppContent() {
                   </button>
 
                 </div>
-
               ))
 
             )}
 
           </div>
 
-
           {cart.length > 0 && (
-
             <div className="border-top pt-3">
 
               <div className="d-flex justify-content-between fw-bold mb-2">
@@ -551,19 +432,13 @@ function AppContent() {
 
               </div>
 
-
-              <p
-                className="text-muted small mb-3"
-                style={{
-                  fontSize: "0.75rem",
-                }}
-              >
+              <p className="text-muted small mb-3">
                 📦{" "}
                 <em>
-                  Free In-Clinic Packaging & Regimen Guide included.
+                  Free In-Clinic Packaging &
+                  Regimen Guide included.
                 </em>
               </p>
-
 
               <button
                 onClick={handleCheckout}
@@ -576,25 +451,19 @@ function AppContent() {
               </button>
 
             </div>
-
           )}
 
         </div>
       )}
 
-
-      {/* AI ASSISTANT */}
-
       <AIAssistantWidget />
-
     </>
   );
 }
 
-
-// ========================================
-// APP
-// ========================================
+// ======================================================
+// MAIN APP
+// ======================================================
 
 function App() {
   return (
@@ -603,6 +472,5 @@ function App() {
     </AuthProvider>
   );
 }
-
 
 export default App;
