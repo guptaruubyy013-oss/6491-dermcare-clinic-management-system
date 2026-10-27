@@ -1,5 +1,11 @@
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { Link } from "react-router-dom";
+
 import {
   FaArrowLeft,
   FaCalendarDays,
@@ -16,7 +22,16 @@ import {
 import { AuthContext } from "../../context/AuthContext";
 import "./Billing.css";
 
-const API_URL = "http://localhost:5000";
+// ======================================================
+// DEPLOYED BACKEND URL
+// ======================================================
+
+const API_URL =
+  "https://6491-dermcare-clinic-management-sys.vercel.app";
+
+// ======================================================
+// BILLING COMPONENT
+// ======================================================
 
 const Billing = () => {
   const { user } = useContext(AuthContext);
@@ -52,8 +67,17 @@ const Billing = () => {
 
         setError("");
 
+        const token = localStorage.getItem("dermcare_token");
+
         const response = await fetch(
-          `${API_URL}/api/billing/patient/${patientId}`
+          `${API_URL}/api/billing/patient/${patientId}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
         );
 
         const data = await response.json();
@@ -169,7 +193,9 @@ const Billing = () => {
             <FaReceipt />
           </div>
 
-          <h2>Loading Billing Records</h2>
+          <h2>
+            Loading Billing Records
+          </h2>
 
           <p>
             Please wait while we retrieve your clinic bills.
@@ -240,12 +266,15 @@ const Billing = () => {
           <div className="billing-patient-info">
 
             <div className="billing-patient-avatar">
+
               {user?.name
                 ? user.name.charAt(0).toUpperCase()
                 : "P"}
+
             </div>
 
             <div>
+
               <span className="billing-small-label">
                 PATIENT
               </span>
@@ -257,6 +286,7 @@ const Billing = () => {
               <p>
                 {user?.email || "Email not available"}
               </p>
+
             </div>
 
           </div>
@@ -267,6 +297,7 @@ const Billing = () => {
             onClick={() => fetchBills(true)}
             disabled={refreshing}
           >
+
             <FaRotate
               className={
                 refreshing
@@ -278,6 +309,7 @@ const Billing = () => {
             {refreshing
               ? "Refreshing..."
               : "Refresh"}
+
           </button>
 
         </div>
@@ -287,6 +319,7 @@ const Billing = () => {
         ================================================== */}
 
         {error && (
+
           <div className="billing-error">
 
             <div className="billing-error-icon">
@@ -294,6 +327,7 @@ const Billing = () => {
             </div>
 
             <div>
+
               <h3>
                 Unable to Load Billing Records
               </h3>
@@ -309,9 +343,11 @@ const Billing = () => {
               >
                 Try Again
               </button>
+
             </div>
 
           </div>
+
         )}
 
         {/* ==================================================
@@ -319,6 +355,7 @@ const Billing = () => {
         ================================================== */}
 
         {!error && (
+
           <section className="billing-summary-grid">
 
             {/* TOTAL BILLS */}
@@ -330,6 +367,7 @@ const Billing = () => {
               </div>
 
               <div>
+
                 <span>
                   TOTAL BILLS
                 </span>
@@ -341,6 +379,7 @@ const Billing = () => {
                 <small>
                   Clinic invoices
                 </small>
+
               </div>
 
             </div>
@@ -354,6 +393,7 @@ const Billing = () => {
               </div>
 
               <div>
+
                 <span>
                   TOTAL BILLED
                 </span>
@@ -365,6 +405,7 @@ const Billing = () => {
                 <small>
                   Total clinic charges
                 </small>
+
               </div>
 
             </div>
@@ -378,6 +419,7 @@ const Billing = () => {
               </div>
 
               <div>
+
                 <span>
                   TOTAL PAID
                 </span>
@@ -389,6 +431,7 @@ const Billing = () => {
                 <small>
                   Amount received
                 </small>
+
               </div>
 
             </div>
@@ -402,6 +445,7 @@ const Billing = () => {
               </div>
 
               <div>
+
                 <span>
                   PENDING AMOUNT
                 </span>
@@ -413,11 +457,13 @@ const Billing = () => {
                 <small>
                   Outstanding balance
                 </small>
+
               </div>
 
             </div>
 
           </section>
+
         )}
 
         {/* ==================================================
@@ -425,6 +471,7 @@ const Billing = () => {
         ================================================== */}
 
         {!error && bills.length === 0 && (
+
           <section className="billing-empty">
 
             <div className="billing-empty-icon">
@@ -449,6 +496,7 @@ const Billing = () => {
             </Link>
 
           </section>
+
         )}
 
         {/* ==================================================
@@ -456,11 +504,13 @@ const Billing = () => {
         ================================================== */}
 
         {!error && bills.length > 0 && (
+
           <section className="billing-records-section">
 
             <div className="billing-section-heading">
 
               <div>
+
                 <span>
                   PAYMENT HISTORY
                 </span>
@@ -468,13 +518,17 @@ const Billing = () => {
                 <h2>
                   Your Clinic Bills
                 </h2>
+
               </div>
 
               <div className="billing-record-count">
+
                 {totalBills}{" "}
+
                 {totalBills === 1
                   ? "Bill"
                   : "Bills"}
+
               </div>
 
             </div>
@@ -500,14 +554,13 @@ const Billing = () => {
                   );
 
                 return (
+
                   <article
                     className="billing-record-card"
                     key={bill._id}
                   >
 
-                    {/* ======================================
-                        BILL HEADER
-                    ====================================== */}
+                    {/* BILL HEADER */}
 
                     <div className="billing-record-header">
 
@@ -552,9 +605,7 @@ const Billing = () => {
 
                     </div>
 
-                    {/* ======================================
-                        BILL INFORMATION
-                    ====================================== */}
+                    {/* BILL INFORMATION */}
 
                     <div className="billing-info-grid">
 
@@ -619,9 +670,7 @@ const Billing = () => {
 
                     </div>
 
-                    {/* ======================================
-                        SERVICES
-                    ====================================== */}
+                    {/* SERVICES */}
 
                     <div className="billing-services">
 
@@ -635,7 +684,9 @@ const Billing = () => {
                         <table className="billing-table">
 
                           <thead>
+
                             <tr>
+
                               <th>
                                 Service
                               </th>
@@ -651,7 +702,9 @@ const Billing = () => {
                               <th>
                                 Total
                               </th>
+
                             </tr>
+
                           </thead>
 
                           <tbody>
@@ -725,9 +778,7 @@ const Billing = () => {
 
                     </div>
 
-                    {/* ======================================
-                        BILL TOTALS
-                    ====================================== */}
+                    {/* BILL TOTALS */}
 
                     <div className="billing-bottom-section">
 
@@ -811,12 +862,14 @@ const Billing = () => {
                     </div>
 
                   </article>
+
                 );
               })}
 
             </div>
 
           </section>
+
         )}
 
         {/* ==================================================
