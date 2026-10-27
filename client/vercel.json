@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/dermcare-clinic-management-system/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
